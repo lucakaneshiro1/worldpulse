@@ -113,6 +113,8 @@ window.__ModuleLoader__.load({
         planSub: '全世界可规划，自动避开战乱与高风险冲突地区。',
         destination: '目的地',
         destinationPlaceholder: '输入城市，如 东京、Paris、Mexico City',
+        origin: '出发城市',
+        originPlaceholder: '如 上海、北京、广州',
         quickPick: '快速选择',
         days: '天数',
         budget: '预算档位',
@@ -151,7 +153,43 @@ window.__ModuleLoader__.load({
         safety: '安全提示',
         transport: '交通与入境',
         entry: '入境与签证',
-        emergency: '紧急联系',
+        flightTitle: '航班建议',
+        flightRoute: '航线',
+        flightAirport: '机场',
+        flightDistance: '直线距离',
+        flightDuration: '飞行时长',
+        flightDirect: '直飞',
+        flightTransfer: '中转',
+        flightTbd: '视航线而定',
+        flightBudget: '廉航',
+        flightPrice: '参考价',
+        flightPros: '优点',
+        flightCons: '注意',
+        flightSearch: '查票平台',
+        flightNote: '机票为经济舱含税参考区间，不含行李、选座与改签；实际价格以下单页为准。',
+        stayTitle: '住宿推荐',
+        stayAreas: '推荐区域',
+        stayTypes: '住宿类型',
+        stayBestFor: '适合',
+        stayCommute: '通勤',
+        stayTip: '预订提示',
+        stayNights: '晚',
+        staySearch: '订房平台',
+        stayNote: '住宿为每晚参考区间，按双人标准间估算；不含城市税、度假费、清洁费与早餐。',
+        groundTitle: '地面交通与 App',
+        airportTransfer: '机场到市区',
+        transitCard: '交通卡',
+        appsTitle: '常用 App',
+        groundTips: '出行提示',
+        platformTitle: '全平台推荐',
+        platformFlights: '机票',
+        platformStays: '住宿',
+        platformTransport: '交通 / 地图',
+        platformVerdict: '推荐组合',
+        platformNote: '平台链接为公开搜索入口，不含返利；价格为参考区间，以下单页实时报价为准。',
+        open: '打开',
+        km: '公里',
+        perNight: '/晚',        emergency: '紧急联系',
         official: '官方信息',
         print: '打印 / 保存 PDF',
         planNote: '路线为通用建议，不含实时票价、营业时间与预约库存；出发前请核对官方信息。',
@@ -252,6 +290,8 @@ window.__ModuleLoader__.load({
         planSub: 'Plan anywhere in the world, with conflict and high-risk zones excluded.',
         destination: 'Destination',
         destinationPlaceholder: 'City, e.g. Tokyo, Paris, Mexico City',
+        origin: 'Departure city',
+        originPlaceholder: 'e.g. Shanghai, Beijing, Guangzhou',
         quickPick: 'Quick picks',
         days: 'Days',
         budget: 'Budget',
@@ -290,6 +330,43 @@ window.__ModuleLoader__.load({
         safety: 'Safety notes',
         transport: 'Transport & entry',
         entry: 'Entry & visa',
+        flightTitle: 'Flight ideas',
+        flightRoute: 'Route',
+        flightAirport: 'Airports',
+        flightDistance: 'Distance',
+        flightDuration: 'Flight time',
+        flightDirect: 'Direct',
+        flightTransfer: 'Transfer',
+        flightTbd: 'Route dependent',
+        flightBudget: 'Low-cost',
+        flightPrice: 'Reference fare',
+        flightPros: 'Upside',
+        flightCons: 'Watch out',
+        flightSearch: 'Search flights',
+        flightNote: 'Economy fares are reference ranges, excluding bags, seats and changes; confirm live prices before booking.',
+        stayTitle: 'Where to stay',
+        stayAreas: 'Recommended areas',
+        stayTypes: 'Stay styles',
+        stayBestFor: 'Best for',
+        stayCommute: 'Getting around',
+        stayTip: 'Booking tip',
+        stayNights: 'nights',
+        staySearch: 'Search stays',
+        stayNote: 'Nightly reference ranges for a double room; city tax, resort fees, cleaning fees and breakfast are excluded.',
+        groundTitle: 'Ground transport & apps',
+        airportTransfer: 'Airport to city',
+        transitCard: 'Transit card',
+        appsTitle: 'Useful apps',
+        groundTips: 'Travel notes',
+        platformTitle: 'Compare platforms',
+        platformFlights: 'Flights',
+        platformStays: 'Stays',
+        platformTransport: 'Transit / maps',
+        platformVerdict: 'Recommended stack',
+        platformNote: 'Public search entrances, no affiliate links; prices are reference ranges, the booking page is authoritative.',
+        open: 'Open',
+        km: 'km',
+        perNight: '/night',
         emergency: 'Emergency',
         official: 'Official links',
         print: 'Print / Save PDF',
@@ -765,11 +842,66 @@ window.__ModuleLoader__.load({
 .wp-alt b{display:block;font-size:11.5px}
 .wp-alt span{display:block;font-size:9.5px;color:var(--dsw-alias-label-secondary,#697386);margin-top:2px;line-height:1.4}
 .wp-alt em{display:block;font-style:normal;font-size:9.5px;color:var(--wp-brand);font-weight:700;margin-top:5px}
+.wp-travel-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
+.wp-span-2{grid-column:1/-1}
+.wp-travel-card{padding:13px 14px}
+.wp-travel-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:8px}
+.wp-travel-head h3{font-size:12.5px;margin:0}
+.wp-travel-sub{font-size:10px;color:var(--dsw-alias-label-secondary,#697386);margin:2px 0 0;line-height:1.45}
+.wp-travel-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:9.5px;color:var(--dsw-alias-label-secondary,#697386);margin:4px 0}
+.wp-travel-meta span{display:inline-flex;align-items:center;gap:3px}
+.wp-travel-options{display:flex;flex-direction:column;gap:7px;margin-top:6px}
+.wp-travel-option{border:1px solid var(--dsw-alias-border-l1,rgba(0,0,0,.08));border-radius:10px;padding:8px 9px;background:var(--dsw-alias-bg-layer-2,rgba(0,0,0,.015))}
+.wp-travel-option-head{display:flex;justify-content:space-between;gap:8px;font-size:11px}
+.wp-travel-option strong{color:var(--wp-brand);font-size:10.5px;white-space:nowrap}
+.wp-travel-option p{font-size:9.8px;color:var(--dsw-alias-label-secondary,#697386);margin:3px 0;line-height:1.45}
+.wp-travel-proscons{display:flex;flex-direction:column;gap:2px;font-size:9.3px;color:var(--dsw-alias-label-secondary,#697386);line-height:1.45}
+.wp-travel-proscons b{color:var(--dsw-alias-label-primary,#111)}
+.wp-travel-label{font-size:9.5px;font-weight:800;letter-spacing:.02em;color:var(--dsw-alias-label-secondary,#697386);text-transform:uppercase;margin:10px 0 5px}
+.wp-travel-links{display:flex;flex-wrap:wrap;gap:5px}
+.wp-travel-links a{display:flex;flex-direction:column;gap:1px;border:1px solid var(--dsw-alias-border-l1,rgba(0,0,0,.08));border-radius:8px;padding:5px 7px;text-decoration:none;color:var(--dsw-alias-label-primary,#111);font-size:10px;min-width:0}
+.wp-travel-links a span{font-weight:700}
+.wp-travel-links a em{font-style:normal;font-size:8.8px;color:var(--dsw-alias-label-secondary,#697386);white-space:normal}
+.wp-travel-links a:hover{border-color:rgba(43,127,255,.4)}
+.wp-travel-note{font-size:9.3px;line-height:1.5;color:var(--dsw-alias-label-secondary,#697386);margin:8px 0 0}
+.wp-stay-areas{display:flex;flex-direction:column;gap:7px}
+.wp-stay-area{border:1px solid var(--dsw-alias-border-l1,rgba(0,0,0,.08));border-radius:10px;padding:8px 9px;background:var(--dsw-alias-bg-layer-2,rgba(0,0,0,.015))}
+.wp-stay-area-head{display:flex;justify-content:space-between;gap:8px;font-size:11px}
+.wp-stay-area-head strong{color:var(--wp-brand);font-size:10px;white-space:nowrap}
+.wp-stay-vibe{display:inline-block;font-size:9px;color:var(--wp-brand);background:rgba(43,127,255,.08);padding:1px 5px;border-radius:999px;margin:2px 0 4px}
+.wp-stay-area p{font-size:9.5px;line-height:1.5;color:var(--dsw-alias-label-secondary,#697386);margin:0 0 2px}
+.wp-stay-area p b{color:var(--dsw-alias-label-primary,#111)}
+.wp-travel-tip{color:var(--dsw-alias-label-secondary,#697386)}
+.wp-stay-types{display:grid;grid-template-columns:1fr;gap:5px;margin-top:8px}
+.wp-stay-type{font-size:9.5px;border-left:2px solid rgba(43,127,255,.35);padding-left:7px}
+.wp-stay-type b{display:block;font-size:10px}
+.wp-stay-type span{color:var(--dsw-alias-label-secondary,#697386);line-height:1.4}
+.wp-ground-list{display:flex;flex-direction:column;gap:6px}
+.wp-ground-item{border-left:2px solid rgba(43,127,255,.35);padding-left:8px}
+.wp-ground-item b{font-size:10.5px}
+.wp-ground-item p{font-size:9.5px;line-height:1.5;color:var(--dsw-alias-label-secondary,#697386);margin:2px 0}
+.wp-apps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.wp-app{border:1px solid var(--dsw-alias-border-l1,rgba(0,0,0,.08));border-radius:8px;padding:6px 7px;text-decoration:none;color:var(--dsw-alias-label-primary,#111);min-width:0}
+.wp-app b{display:block;font-size:10px}
+.wp-app span{display:block;font-size:8.8px;color:var(--dsw-alias-label-secondary,#697386);line-height:1.35}
+.wp-app:hover{border-color:rgba(43,127,255,.4)}
+.wp-ground-tips{margin:0;padding-left:14px;font-size:9.5px;line-height:1.55;color:var(--dsw-alias-label-secondary,#697386)}
+.wp-ground-tips li{margin:0 0 2px}
+.wp-platform-card{margin-top:12px;padding:14px}
+.wp-platform-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.wp-platform-col{min-width:0}
+.wp-platform-item{display:flex;flex-direction:column;gap:1px;padding:5px 0;border-bottom:1px dashed var(--dsw-alias-border-l1,rgba(0,0,0,.08));text-decoration:none;color:var(--dsw-alias-label-primary,#111)}
+.wp-platform-item b{font-size:10.3px}
+.wp-platform-item span{font-size:8.8px;color:var(--wp-brand)}
+.wp-platform-item em{font-style:normal;font-size:8.5px;color:var(--dsw-alias-label-secondary,#697386);line-height:1.35}
+.wp-platform-verdict{margin-top:10px;padding-top:9px;border-top:1px solid var(--dsw-alias-border-l1,rgba(0,0,0,.08));display:grid;gap:4px}
+.wp-platform-verdict p{font-size:9.8px;line-height:1.5;color:var(--dsw-alias-label-secondary,#697386);margin:0}
+.wp-platform-verdict b{color:var(--dsw-alias-label-primary,#111)}
 .wp-footer{margin-top:28px;padding-top:14px;border-top:1px solid var(--dsw-alias-border-l1,rgba(0,0,0,.08));display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--dsw-alias-label-secondary,#697386)}
 .wp-footer a{color:var(--wp-brand);text-decoration:none}
-@media(max-width:1000px){.wp-hero{grid-template-columns:1fr}.wp-hero-stats{grid-template-columns:repeat(4,1fr)}.wp-stat.wide{grid-column:auto}.wp-grid,.wp-analysis-grid{grid-template-columns:1fr}.wp-side,.wp-plan-side{position:static}.wp-plan-layout{grid-template-columns:1fr}.wp-planner{position:static}.wp-plan-grid{grid-template-columns:1fr}}
-@media(max-width:700px){.wp-shell{padding:12px 12px 34px}.wp-header{flex-wrap:wrap;gap:8px}.wp-brand{min-width:0}.wp-brand-mark{width:34px;height:34px}.wp-tabs{order:3;width:100%}.wp-header-actions{margin-left:auto}.wp-hero{padding:24px 20px;border-radius:18px}.wp-hero-stats{grid-template-columns:1fr 1fr}.wp-stat.wide{grid-column:1/-1}.wp-analysis-top{grid-template-columns:1fr}.wp-gauge-card{flex-direction:row;justify-content:flex-start;gap:16px}.wp-hotspots{grid-template-columns:1fr}.wp-result-head{flex-direction:column}.wp-result-actions{flex-direction:row;align-items:center}.wp-alternatives{grid-template-columns:1fr}.wp-bar-row{grid-template-columns:64px minmax(0,1fr) 22px}.wp-activity{grid-template-columns:38px minmax(0,1fr)}.wp-brand-en{display:none}}
-@media print{.wp-header,.wp-hero,.wp-planner,.wp-toolbar,.wp-footer,.wp-plan-side .wp-card:last-child{display:none!important}.wp-page{background:#fff}.wp-shell{max-width:none;padding:0}.wp-plan-layout{display:block}.wp-plan-result{margin-top:0}.wp-plan-grid{grid-template-columns:1fr}.wp-day{break-inside:avoid}.wp-result-actions{display:none}.wp-plan-side{position:static}.wp-card,.wp-day,.wp-result-head{border-color:#ddd;box-shadow:none}}
+@media(max-width:1000px){.wp-hero{grid-template-columns:1fr}.wp-hero-stats{grid-template-columns:repeat(4,1fr)}.wp-stat.wide{grid-column:auto}.wp-grid,.wp-analysis-grid{grid-template-columns:1fr}.wp-side,.wp-plan-side{position:static}.wp-plan-layout{grid-template-columns:1fr}.wp-planner{position:static}.wp-plan-grid{grid-template-columns:1fr}.wp-travel-grid,.wp-platform-grid{grid-template-columns:1fr}.wp-span-2{grid-column:auto}}
+@media(max-width:700px){.wp-shell{padding:12px 12px 34px}.wp-header{flex-wrap:wrap;gap:8px}.wp-brand{min-width:0}.wp-brand-mark{width:34px;height:34px}.wp-tabs{order:3;width:100%}.wp-header-actions{margin-left:auto}.wp-hero{padding:24px 20px;border-radius:18px}.wp-hero-stats{grid-template-columns:1fr 1fr}.wp-stat.wide{grid-column:1/-1}.wp-analysis-top{grid-template-columns:1fr}.wp-gauge-card{flex-direction:row;justify-content:flex-start;gap:16px}.wp-hotspots{grid-template-columns:1fr}.wp-result-head{flex-direction:column}.wp-result-actions{flex-direction:row;align-items:center}.wp-alternatives{grid-template-columns:1fr}.wp-bar-row{grid-template-columns:64px minmax(0,1fr) 22px}.wp-activity{grid-template-columns:38px minmax(0,1fr)}.wp-brand-en{display:none}.wp-apps{grid-template-columns:1fr 1fr}.wp-travel-head{flex-wrap:wrap}}
+@media print{.wp-header,.wp-hero,.wp-planner,.wp-toolbar,.wp-footer,.wp-plan-side .wp-card:last-child{display:none!important}.wp-page{background:#fff}.wp-shell{max-width:none;padding:0}.wp-plan-layout{display:block}.wp-plan-result{margin-top:0}.wp-plan-grid{grid-template-columns:1fr}.wp-day{break-inside:avoid}.wp-result-actions{display:none}.wp-plan-side{position:static}.wp-card,.wp-day,.wp-result-head{border-color:#ddd;box-shadow:none}.wp-travel-card,.wp-platform-card{break-inside:avoid}}
 `;
     const CSS_ID = 'worldpulse-style';
     function Style() {
@@ -1049,6 +1181,120 @@ window.__ModuleLoader__.load({
           h('div', { style: { marginTop: 4 } }, day.tip)));
     }
 
+    function TravelLinks({ links, limit, lang }) {
+      const visible = (links ?? []).slice(0, limit ?? 4);
+      if (!visible.length) return null;
+      return h('div', { className: 'wp-travel-links' },
+        visible.map((link) => h('a', {
+          key: link.name, href: link.url, target: '_blank', rel: 'noopener noreferrer',
+        },
+        h('span', null, link.name),
+        h('em', null, link.note ?? link.strength ?? tx(lang, 'open')))));
+    }
+
+    function FlightPanel({ flights, lang }) {
+      if (!flights) return null;
+      return h('div', { className: 'wp-card wp-travel-card' },
+        h('div', { className: 'wp-travel-head' },
+          h('div', null,
+            h('h3', null, tx(lang, 'flightTitle')),
+            h('p', { className: 'wp-travel-sub' }, `${flights.origin} → ${flights.destinationCode ?? ''}`)),
+          h('span', { className: 'wp-mini-pill' }, flights.distanceKm == null ? tx(lang, 'flightTbd') : flights.directPossible ? tx(lang, 'flightDirect') : tx(lang, 'flightTransfer'))),
+        h('div', { className: 'wp-travel-meta' },
+          flights.distanceKm ? h('span', null, `${tx(lang, 'flightDistance')} ${flights.distanceKm} ${tx(lang, 'km')}`) : null,
+          h('span', null, `${tx(lang, 'flightDuration')} ${flights.directDuration}`),
+          flights.airport ? h('span', null, `${tx(lang, 'flightAirport')} ${flights.airport}`) : null),
+        h('div', { className: 'wp-travel-options' },
+          (flights.options ?? []).map((option, index) => h('div', { className: 'wp-travel-option', key: index },
+            h('div', { className: 'wp-travel-option-head' },
+              h('b', null, option.title),
+              h('strong', null, money(option.priceLow, option.priceHigh))),
+            h('p', null, option.carriers),
+            h('div', { className: 'wp-travel-meta' },
+              h('span', null, h(Icon, { name: 'clock', size: 9 }), ` ${option.duration}`),
+              h('span', null, `${option.kind === 'transfer' ? tx(lang, 'flightTransfer') : option.kind === 'budget' ? tx(lang, 'flightBudget') : tx(lang, 'flightDirect')}`)),
+            h('div', { className: 'wp-travel-proscons' },
+              h('span', null, h('b', null, `${tx(lang, 'flightPros')}: `), option.pros),
+              h('span', null, h('b', null, `${tx(lang, 'flightCons')}: `), option.cons)))))
+        ,
+        h('div', { className: 'wp-travel-label' }, tx(lang, 'flightSearch')),
+        h(TravelLinks, { links: flights.search, limit: 4, lang }),
+        h('p', { className: 'wp-travel-note' }, flights.note));
+    }
+
+    function StayPanel({ stays, lang }) {
+      if (!stays) return null;
+      return h('div', { className: 'wp-card wp-travel-card' },
+        h('div', { className: 'wp-travel-head' },
+          h('div', null,
+            h('h3', null, tx(lang, 'stayTitle')),
+            h('p', { className: 'wp-travel-sub' }, tx(lang, 'stayAreas'))),
+          stays.nights ? h('span', { className: 'wp-mini-pill' }, `${stays.nights} ${tx(lang, 'stayNights')}`) : null),
+        h('div', { className: 'wp-stay-areas' },
+          (stays.areas ?? []).map((area) => h('div', { className: 'wp-stay-area', key: area.name },
+            h('div', { className: 'wp-stay-area-head' },
+              h('b', null, area.name),
+              h('strong', null, `${money(area.priceLow, area.priceHigh)}${tx(lang, 'perNight')}`)),
+            h('span', { className: 'wp-stay-vibe' }, area.vibe),
+            h('p', null, h('b', null, `${tx(lang, 'stayBestFor')}: `), area.bestFor),
+            h('p', null, h('b', null, `${tx(lang, 'stayCommute')}: `), area.commute),
+            h('p', { className: 'wp-travel-tip' }, h('b', null, `${tx(lang, 'stayTip')}: `), area.tip)))),
+        h('div', { className: 'wp-stay-types' },
+          (stays.types ?? []).map((type) => h('div', { className: 'wp-stay-type', key: type.name },
+            h('b', null, type.name), h('span', null, type.desc)))),
+        h('div', { className: 'wp-travel-label' }, tx(lang, 'staySearch')),
+        h(TravelLinks, { links: stays.search, limit: 4, lang }),
+        h('p', { className: 'wp-travel-note' }, stays.note));
+    }
+
+    function GroundPanel({ ground, lang }) {
+      if (!ground) return null;
+      return h('div', { className: 'wp-card wp-travel-card' },
+        h('div', { className: 'wp-travel-head' },
+          h('div', null,
+            h('h3', null, tx(lang, 'groundTitle')),
+            h('p', { className: 'wp-travel-sub' }, `${tx(lang, 'transitCard')}: ${ground.transitCard}`))),
+        h('div', { className: 'wp-travel-label' }, tx(lang, 'airportTransfer')),
+        h('div', { className: 'wp-ground-list' },
+          (ground.airport ?? []).map((item, index) => h('div', { className: 'wp-ground-item', key: index },
+            h('b', null, item.mode),
+            h('p', null, item.detail),
+            h('div', { className: 'wp-travel-meta' }, h('span', null, item.time), h('span', null, item.price))))),
+        h('div', { className: 'wp-travel-label' }, tx(lang, 'appsTitle')),
+        h('div', { className: 'wp-apps' },
+          (ground.apps ?? []).map((app) => h('a', {
+            key: app.name, href: app.url, target: '_blank', rel: 'noopener noreferrer', className: 'wp-app',
+          }, h('b', null, app.name), h('span', null, app.use)))),
+        h('div', { className: 'wp-travel-label' }, tx(lang, 'groundTips')),
+        h('ul', { className: 'wp-ground-tips' },
+          (ground.tips ?? []).slice(0, 4).map((tip, index) => h('li', { key: index }, tip))));
+    }
+
+    function PlatformPanel({ platforms, lang }) {
+      if (!platforms) return null;
+      const groups = [
+        ['platformFlights', platforms.flights],
+        ['platformStays', platforms.stays],
+        ['platformTransport', platforms.transport],
+      ];
+      return h('div', { className: 'wp-card wp-platform-card' },
+        h('div', { className: 'wp-travel-head' },
+          h('div', null,
+            h('h3', null, tx(lang, 'platformTitle')),
+            h('p', { className: 'wp-travel-sub' }, tx(lang, 'platformNote')))),
+        h('div', { className: 'wp-platform-grid' },
+          groups.map(([label, items]) => h('div', { className: 'wp-platform-col', key: label },
+            h('div', { className: 'wp-travel-label' }, tx(lang, label)),
+            (items ?? []).slice(0, 4).map((item) => h('a', {
+              key: item.name, href: item.url, target: '_blank', rel: 'noopener noreferrer', className: 'wp-platform-item',
+            }, h('b', null, item.name), h('span', null, item.strength), h('em', null, item.note)))))),
+        h('div', { className: 'wp-platform-verdict' },
+          ['flights', 'stays', 'transport'].map((key) => h('p', { key },
+            h('b', null, `${tx(lang, key === 'flights' ? 'platformFlights' : key === 'stays' ? 'platformStays' : 'platformTransport')}: `),
+            platforms.verdict?.[key] ?? ''))),
+        h('p', { className: 'wp-travel-note' }, platforms.note));
+    }
+
     function PlanView({ lang, plan, form, setForm, runPlan, printPlan }) {
       const interests = [
         ['culture', tx(lang, 'interestCulture')],
@@ -1087,6 +1333,13 @@ window.__ModuleLoader__.load({
             quick.map((name) => h('button', {
               type: 'button', key: name, onClick: () => setForm((previous) => ({ ...previous, destination: name })),
             }, name)))),
+        h('div', { className: 'wp-field' },
+          h('label', { htmlFor: 'wp-origin' }, tx(lang, 'origin')),
+          h('input', {
+            id: 'wp-origin', className: 'wp-input', value: form.origin ?? '上海',
+            placeholder: tx(lang, 'originPlaceholder'),
+            onChange: (event) => setForm((previous) => ({ ...previous, origin: event.target.value })),
+          })),
         h('div', { className: 'wp-field' },
           h('div', { className: 'wp-row' },
             h('span', { className: 'wp-label' }, tx(lang, 'days')),
@@ -1164,6 +1417,7 @@ window.__ModuleLoader__.load({
                 h('div', { className: 'wp-overview-meta' },
                   h('span', { className: 'wp-mini-pill' }, `${data.itinerary?.length ?? 0} ${tx(lang, 'daysUnit')}`),
                   h('span', { className: 'wp-mini-pill' }, data.destination.timezone),
+                  h('span', { className: 'wp-mini-pill' }, `${tx(lang, 'origin')}: ${data.origin ?? '上海'}`),
                   h('span', { className: 'wp-mini-pill' }, `${tx(lang, 'budget')}: ${data.budget?.label}`))),
               h('div', { className: 'wp-result-actions' },
                 h(RiskBadge, { level: data.risk?.level, lang }),
@@ -1173,6 +1427,11 @@ window.__ModuleLoader__.load({
             data.risk?.level === 'amber' ? h('div', { className: 'wp-banner' },
               h(Icon, { name: 'alert', size: 15 }),
               h('div', null, h('b', null, `${tx(lang, 'riskAmber')} · `), `${tx(lang, 'avoid')}: ${data.risk.avoid}`)) : null,
+            h('div', { className: 'wp-travel-grid' },
+              h(FlightPanel, { flights: data.flights, lang }),
+              h(StayPanel, { stays: data.stays, lang }),
+              h('div', { className: 'wp-span-2' }, h(GroundPanel, { ground: data.ground, lang }))),
+            h(PlatformPanel, { platforms: data.platforms, lang }),
             h('div', { className: 'wp-plan-grid' },
               h('div', { className: 'wp-days' },
                 (data.itinerary ?? []).map((day) => h(DayCard, { day, lang, key: day.day }))),
@@ -1218,7 +1477,7 @@ window.__ModuleLoader__.load({
       const [brief, setBrief] = useState({ loading: false, data: null, error: null });
       const [plan, setPlan] = useState({ loading: false, data: null, error: null, payload: null });
       const [form, setForm] = useState({
-        destination: '东京', days: 4, budget: 'comfort', pace: 'balanced', interests: ['culture', 'food'],
+        origin: '上海', destination: '东京', days: 4, budget: 'comfort', pace: 'balanced', interests: ['culture', 'food'],
       });
       const newsAbort = useRef(null);
       const briefAbort = useRef(null);
@@ -1295,6 +1554,7 @@ window.__ModuleLoader__.load({
         try {
           const data = await api('plan', {
             destination,
+            origin: form.origin || '上海',
             days: form.days,
             budget: form.budget,
             pace: form.pace,

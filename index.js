@@ -1493,8 +1493,598 @@ function buildBudget(days, budgetKey) {
   };
 }
 
-async function planTrip(ctx, destination, days, budgetKey, pace, interests, bypass) {
-  const cacheKey = `plan:${destination}|${days}|${budgetKey}|${pace}|${interests.join(',')}`;
+/* ------------------------------------------------------------------ */
+/* Flights, stays, platforms and ground transport                      */
+/* ------------------------------------------------------------------ */
+
+const ORIGIN_HUBS = [
+  { name: '上海', code: 'SHA/PVG', short: 'SHA', lat: 31.2304, lon: 121.4737, aliases: ['上海', 'shanghai', 'sha', 'pvg'] },
+  { name: '北京', code: 'PEK/PKX', short: 'BJS', lat: 39.9042, lon: 116.4074, aliases: ['北京', 'beijing', 'bjs', 'pek', 'pkx'] },
+  { name: '广州', code: 'CAN', short: 'CAN', lat: 23.1291, lon: 113.2644, aliases: ['广州', 'guangzhou', 'can'] },
+  { name: '深圳', code: 'SZX', short: 'SZX', lat: 22.5431, lon: 114.0579, aliases: ['深圳', 'shenzhen', 'szx'] },
+  { name: '成都', code: 'CTU/TFU', short: 'CTU', lat: 30.5728, lon: 104.0668, aliases: ['成都', 'chengdu', 'ctu', 'tfu'] },
+  { name: '杭州', code: 'HGH', short: 'HGH', lat: 30.2741, lon: 120.1551, aliases: ['杭州', 'hangzhou', 'hgh'] },
+  { name: '南京', code: 'NKG', short: 'NKG', lat: 32.0603, lon: 118.7969, aliases: ['南京', 'nanjing', 'nkg'] },
+  { name: '武汉', code: 'WUH', short: 'WUH', lat: 30.5928, lon: 114.3055, aliases: ['武汉', 'wuhan', 'wuh'] },
+  { name: '西安', code: 'XIY', short: 'XIY', lat: 34.3416, lon: 108.9398, aliases: ['西安', "xi'an", 'xian', 'xiy'] },
+  { name: '重庆', code: 'CKG', short: 'CKG', lat: 29.563, lon: 106.5516, aliases: ['重庆', 'chongqing', 'ckg'] },
+  { name: '香港', code: 'HKG', short: 'HKG', lat: 22.3193, lon: 114.1694, aliases: ['香港', 'hongkong', 'hong kong', 'hkg'] },
+  { name: '台北', code: 'TPE/TSA', short: 'TPE', lat: 25.033, lon: 121.5654, aliases: ['台北', 'taipei', 'tpe', 'tsa'] },
+  { name: '厦门', code: 'XMN', short: 'XMN', lat: 24.4798, lon: 118.0894, aliases: ['厦门', 'xiamen', 'xmn'] },
+  { name: '青岛', code: 'TAO', short: 'TAO', lat: 36.0671, lon: 120.3826, aliases: ['青岛', 'qingdao', 'tao'] },
+  { name: '昆明', code: 'KMG', short: 'KMG', lat: 25.0389, lon: 102.7183, aliases: ['昆明', 'kunming', 'kmg'] },
+  { name: '乌鲁木齐', code: 'URC', short: 'URC', lat: 43.8256, lon: 87.6168, aliases: ['乌鲁木齐', 'urumqi', 'urc'] },
+];
+
+const AIRPORT_INFO = {
+  tokyo: { code: 'TYO', label: '成田 NRT / 羽田 HND' },
+  kyoto: { code: 'KIX', label: '关西 KIX' },
+  seoul: { code: 'SEL', label: '仁川 ICN / 金浦 GMP' },
+  beijing: { code: 'BJS', label: '首都 PEK / 大兴 PKX' },
+  shanghai: { code: 'SHA', label: '浦东 PVG / 虹桥 SHA' },
+  chengdu: { code: 'CTU', label: '天府 TFU / 双流 CTU' },
+  hongkong: { code: 'HKG', label: '香港 HKG' },
+  singapore: { code: 'SIN', label: '樟宜 SIN' },
+  bangkok: { code: 'BKK', label: '素万那普 BKK / 廊曼 DMK' },
+  bali: { code: 'DPS', label: '伍拉·赖 DPS' },
+  paris: { code: 'PAR', label: '戴高乐 CDG / 奥利 ORY' },
+  london: { code: 'LON', label: '希思罗 LHR / 盖特威克 LGW' },
+  rome: { code: 'ROM', label: '菲乌米奇诺 FCO / 钱皮诺 CIA' },
+  barcelona: { code: 'BCN', label: '巴塞罗那 BCN' },
+  istanbul: { code: 'IST', label: '伊斯坦布尔 IST / 萨比哈 SAW' },
+  newyork: { code: 'NYC', label: '肯尼迪 JFK / 纽瓦克 EWR' },
+  sanfrancisco: { code: 'SFO', label: '旧金山 SFO' },
+  sydney: { code: 'SYD', label: '悉尼 SYD' },
+  dubai: { code: 'DXB', label: '迪拜 DXB / 阿勒马克图姆 DWC' },
+  cairo: { code: 'CAI', label: '开罗 CAI' },
+  capetown: { code: 'CPT', label: '开普敦 CPT' },
+  rio: { code: 'RIO', label: '加利昂 GIG / 桑托斯杜蒙特 SDU' },
+  mexicocity: { code: 'MEX', label: '墨西哥城 MEX' },
+  vancouver: { code: 'YVR', label: '温哥华 YVR' },
+};
+
+const STAY_AREAS = {
+  tokyo: [
+    ['新宿', '交通枢纽 / 夜生活', '第一次到东京、购物与夜生活', 'JR 山手线换乘方便，去箱根/河口湖也顺路', '选离歌舞伎町稍远的街区，晚上更安静', 1.15],
+    ['涩谷', '年轻街区 / 潮流', '购物、夜生活、去横滨', '地铁银座线、半藏门线与 JR 多线', '十字路口周边很吵，可选代官山/南平台一侧', 1.2],
+    ['上野', '博物馆 / 性价比', '亲子、预算有限、成田进出', '京成 Skyliner 直达成田，JR 多线', '晚间相对安静，餐饮选择略少', 0.9],
+  ],
+  kyoto: [
+    ['京都站', '交通枢纽', '首访、短途与关西进出', 'JR、新干线、巴士总站都在站前', '方便但古都氛围弱，适合以交通为先', 1.0],
+    ['祇园 / 东山', '古都体验', '人文、摄影、慢游', '巴士可达清水寺、八坂神社', '尊重居民与艺伎，部分小巷禁止拍摄', 1.3],
+    ['河原町 / 乌丸', '餐饮 / 购物', '美食、夜生活、购物', '阪急与地铁乌丸线，步行到锦市场', '热闹方便，周末房价较高', 1.1],
+  ],
+  seoul: [
+    ['明洞', '购物 / 首访', '购物、美食、第一次到首尔', '地铁 4 号线，机场巴士直达', '人流大，晚上较吵', 1.1],
+    ['弘大', '年轻 / 夜生活', '夜生活、预算有限', '地铁 2 号线与机场线', '周末夜间热闹，睡眠浅的人慎选', 0.95],
+    ['江南', '商务 / 品质', '商务、购物、品质酒店', '地铁 2/9 号线', '价格高，离传统景点稍远', 1.3],
+  ],
+  beijing: [
+    ['东城 / 王府井', '老城 / 首访', '人文、购物、第一次到北京', '地铁 1/8 号线，步行到故宫', '景区周边人多，提前预约', 1.2],
+    ['朝阳 / 三里屯', '现代 / 夜生活', '美食、购物、夜生活', '地铁 10 号线，打车方便', '高峰堵车，选靠地铁的酒店', 1.15],
+    ['西城 / 什刹海', '胡同 / 慢游', '人文、摄影、慢节奏', '地铁 6/8 号线，胡同内步行', '晚上安静，部分民宿隔音一般', 1.0],
+  ],
+  shanghai: [
+    ['人民广场 / 南京路', '首访 / 交通', '购物、人文、第一次到上海', '地铁 1/2/8 号线，去外滩步行可达', '人多，选离主街一条街的酒店', 1.15],
+    ['静安', '品质 / 餐饮', '美食、购物、品质酒店', '地铁 2/7 号线，去机场方便', '价格高，商务客多', 1.25],
+    ['徐汇 / 衡复', '街区 / 慢游', '人文、咖啡、步行', '地铁 1/10/11 号线', '梧桐区适合散步，部分老洋房无电梯', 1.1],
+  ],
+  chengdu: [
+    ['春熙路 / 太古里', '市中心 / 购物', '首访、美食、购物', '地铁 2/3 号线', '热闹，晚上人流量大', 1.15],
+    ['宽窄巷子', '老城 / 人文', '人文、美食、摄影', '地铁 4 号线', '游客多，选巷子外的酒店更安静', 1.05],
+    ['人民公园', '本地生活', '慢游、茶馆、预算有限', '地铁 2 号线', '安静，餐饮选择不如市中心密集', 0.95],
+  ],
+  hongkong: [
+    ['尖沙咀', '维港 / 购物', '首访、夜景、购物', '地铁荃湾线，天星小轮去中环', '酒店房间普遍偏小，选海景需加价', 1.2],
+    ['中环 / 金钟', '商务 / 品质', '商务、购物、品质酒店', '地铁港岛线，机场快线直达', '价格高，坡多', 1.4],
+    ['铜锣湾', '购物 / 美食', '购物、美食、夜生活', '地铁港岛线', '人多吵杂，适合喜欢热闹的人', 1.15],
+  ],
+  singapore: [
+    ['滨海湾', '地标 / 品质', '首访、夜景、亲子', '地铁环线/市区线', '价格高，步行到景点方便', 1.35],
+    ['乌节路', '购物 / 商务', '购物、商务、品质酒店', '地铁南北线', '方便但缺少老城氛围', 1.25],
+    ['牛车水', '美食 / 性价比', '美食、人文、预算有限', '地铁东北线', '热闹，部分老酒店设施较旧', 0.95],
+  ],
+  bangkok: [
+    ['暹罗', '购物 / 交通', '首访、购物、换乘', 'BTS 暹罗站，去机场与商圈方便', '高峰堵车，优先选 BTS 沿线', 1.1],
+    ['素坤逸', '餐饮 / 夜生活', '美食、夜生活、长住', 'BTS 阿索克/娜娜，换乘方便', '选靠 BTS 的巷子，避免深巷', 1.05],
+    ['老城 / 考山路', '人文 / 背包客', '人文、预算、夜生活', '湄南河船 + 步行', '晚上吵，寺庙区清晨更值得', 0.9],
+  ],
+  bali: [
+    ['乌布', '稻田 / 人文', '人文、自然、瑜伽', '包车或摩托，离海滩较远', '适合住 2–3 晚，夜间餐饮选择少', 0.95],
+    ['水明漾', '海滩 / 餐饮', '美食、夜生活、购物', '包车/Grab，堵车常见', '选离主路稍远的别墅更安静', 1.2],
+    ['努沙杜瓦', '度假 / 亲子', '亲子、奢华、躺平', '包车为主，出行成本高', '安静但偏，适合度假酒店', 1.35],
+  ],
+  paris: [
+    ['玛黑区', '老城 / 设计', '人文、购物、夜生活', '地铁 1/8 号线，步行到塞纳河', '价格高，部分街道晚上较吵', 1.3],
+    ['拉丁区', '学术 / 河畔', '人文、美食、首访', '地铁 4/10 号线', '游客多，选小巷内的酒店', 1.2],
+    ['歌剧院区', '交通 / 购物', '首访、购物、商务', '地铁 3/7/8 号线，去机场方便', '方便但精品小店少', 1.25],
+  ],
+  london: [
+    ['西敏 / 维多利亚', '地标 / 交通', '首访、家庭、交通', '地铁环线/维多利亚线', '价格高，游客密集', 1.3],
+    ['科文特花园', '剧院 / 餐饮', '美食、购物、剧院', '地铁皮卡迪利线', '晚上热闹，房间偏小', 1.25],
+    ['南岸', '河景 / 文化', '人文、家庭、慢游', '地铁 Jubilee 线，沿河步行', '步行体验好，部分区域夜间较空', 1.15],
+  ],
+  rome: [
+    ['历史中心 / 万神殿', '古迹 / 步行', '首访、人文、摄影', '步行 + 公交，景点密集', '价格高、街道吵，选小巷酒店', 1.3],
+    ['梵蒂冈 / 普拉蒂', '博物馆 / 安静', '人文、家庭、博物馆', '地铁 A 线，步行到圣彼得', '安静，餐饮偏本地', 1.1],
+    ['特拉斯提弗列', '餐饮 / 夜生活', '美食、夜生活、慢游', '公交/步行，过河到老城', '晚上热闹，选离主街稍远', 1.05],
+  ],
+  barcelona: [
+    ['哥特区', '老城 / 历史', '人文、夜生活、首访', '地铁 L3/L4，步行到兰布拉', '巷子窄，夜间注意随身物品', 1.15],
+    ['扩展区', '建筑 / 购物', '人文、购物、商务', '地铁 L2/L3/L4', '街区规整，适合步行', 1.2],
+    ['格拉西亚', '街区 / 本地生活', '美食、慢游、预算', '地铁 L3，坡多', '本地氛围好，离海边稍远', 1.0],
+  ],
+  istanbul: [
+    ['苏丹艾哈迈德', '古迹 / 首访', '人文、摄影、第一次到伊斯坦布尔', '电车 T1，步行到主要古迹', '游客多，晚上商铺关门后较安静', 1.15],
+    ['贝伊奥卢', '餐饮 / 夜生活', '美食、夜生活、购物', '地铁 M2/隧道，坡多', '晚上热闹，选离酒吧街稍远', 1.05],
+    ['卡拉柯伊', '设计 / 河景', '人文、咖啡、交通', '电车 T1/渡轮，去老城方便', '交通方便，周末人多', 1.2],
+  ],
+  newyork: [
+    ['曼哈顿中城', '交通 / 地标', '首访、商务、剧院', '地铁多线，去机场方便', '吵、贵，选高层或靠东侧', 1.35],
+    ['下城', '金融 / 历史', '商务、人文、首访', '地铁 4/5/R/W，步行到码头', '周末较安静，餐饮选择多', 1.25],
+    ['布鲁克林', '街区 / 性价比', '美食、慢游、预算', '地铁 L/A/C，通勤 20–30 分钟', '选靠地铁的街区，夜间注意安全', 0.95],
+  ],
+  sanfrancisco: [
+    ['联合广场', '购物 / 交通', '首访、购物、商务', '缆车/地铁，去机场方便', '市中心流浪者较多，注意随身物品', 1.25],
+    ['渔人码头', '海景 / 家庭', '亲子、观光、海鲜', '缆车/公交，游客多', '晚上较冷，选有暖气的酒店', 1.15],
+    ['教会区', '美食 / 街区', '美食、夜生活、本地生活', 'BART/公交，坡多', '街区氛围好，部分路段夜间较空', 1.0],
+  ],
+  sydney: [
+    ['CBD / 环形码头', '地标 / 交通', '首访、商务、渡轮', '火车/渡轮，去机场方便', '价格高，周末商务区较安静', 1.3],
+    ['岩石区', '历史 / 周末', '人文、美食、市场', '火车/渡轮，步行到歌剧院', '游客多，周末市集热闹', 1.25],
+    ['邦迪', '海滩 / 年轻', '自然、夜生活、冲浪', '公交/打车，离市中心 20 分钟', '夏季房价高，注意防晒', 1.1],
+  ],
+  dubai: [
+    ['迪拜市中心', '地标 / 购物', '首访、购物、夜景', '地铁红线，去机场方便', '贵，夏季室外很热', 1.3],
+    ['码头区', '海景 / 餐饮', '家庭、夜生活、长住', '地铁/电车，步行道好', '离老城稍远，适合慢住', 1.2],
+    ['朱美拉', '海滩 / 度假', '亲子、奢华、海滩', '打车为主，离地铁远', '度假酒店集中，出行成本高', 1.35],
+  ],
+  cairo: [
+    ['扎马雷克', '餐饮 / 河景', '美食、人文、长住', '打车/地铁，过河到市中心', '晚上热闹，选离主路稍远', 1.05],
+    ['市中心', '历史 / 交通', '首访、预算、博物馆', '地铁/打车，去解放广场方便', '吵，注意交通安全', 0.9],
+    ['吉萨', '金字塔 / 家庭', '亲子、观光、金字塔', '打车为主，离市区较远', '看金字塔方便，夜间选择少', 0.95],
+  ],
+  capetown: [
+    ['市中心 / 公司花园', '交通 / 首访', '首访、商务、预算', '步行/打车，去码头方便', '夜间注意安全，选有安保的酒店', 1.0],
+    ['海角滨水区', '海景 / 购物', '家庭、美食、购物', '打车/公交，去桌山方便', '贵，游客多', 1.25],
+    ['坎普斯湾', '海滩 / 度假', '自然、奢华、海滩', '打车为主，风大', '度假氛围好，离市区稍远', 1.3],
+  ],
+  rio: [
+    ['科帕卡巴纳', '海滩 / 首访', '首访、夜生活、海滩', '地铁 1 号线，沿海步行', '注意随身物品，夜间选热闹路段', 1.15],
+    ['伊帕内玛', '海滩 / 品质', '美食、购物、品质酒店', '地铁 1 号线', '贵，海滩人多', 1.3],
+    ['圣特蕾莎', '山城 / 艺术', '人文、慢游、摄影', '打车/缆车，坡多', '街区有特色，夜间出行打车', 0.95],
+  ],
+  mexicocity: [
+    ['罗马区', '餐饮 / 设计', '美食、人文、步行', '地铁/打车，街区适合散步', '选靠主街的酒店，晚上更安全', 1.15],
+    ['康德萨', '绿树 / 餐饮', '美食、夜生活、品质', '地铁/打车，公园多', '贵，周末晚上热闹', 1.25],
+    ['历史中心', '古迹 / 首访', '人文、预算、首访', '地铁 2 号线，步行到宪法广场', '人多，注意随身物品', 0.95],
+  ],
+  vancouver: [
+    ['市中心', '交通 / 购物', '首访、商务、购物', '天车/步行，去机场方便', '贵，部分街区夜间较空', 1.25],
+    ['煤气镇', '历史 / 餐饮', '人文、夜生活、设计', '天车/步行，去码头方便', '晚上较安静，餐饮选择多', 1.15],
+    ['基斯兰奴', '海滩 / 本地生活', '自然、慢游、家庭', '公交/骑行，离市中心 15 分钟', '海滩好，停车难', 1.05],
+  ],
+};
+
+const AIRPORT_TRANSFERS = {
+  tokyo: [
+    ['京成 Skyliner / N\'EX', '成田→上野/新宿；羽田→品川/滨松町，轨道最稳。', '40–90 分钟', '$15–$30'],
+    ['机场利木津巴士', '直达主要酒店，行李多时省心；确认末班时间。', '60–120 分钟', '$10–$25'],
+    ['出租车', '深夜或多人多行李时使用，费用较高。', '40–90 分钟', '$60–$200'],
+  ],
+  kyoto: [
+    ['Haruka 特急', '关西机场→京都站，约 80 分钟，指定席更稳。', '75–90 分钟', '$20–$30'],
+    ['机场巴士', '关西机场→京都站/部分酒店，行李多时方便。', '90–120 分钟', '$15–$25'],
+    ['出租车 / 包车', '多人或深夜抵达时使用，提前确认价格。', '90–120 分钟', '$150–$250'],
+  ],
+  seoul: [
+    ['AREX 机场铁路', '仁川→首尔站，普通车便宜、直达车更快。', '45–60 分钟', '$5–$10'],
+    ['机场 limousine 巴士', '直达明洞/江南等主要酒店，适合行李多。', '60–90 分钟', '$10–$18'],
+    ['出租车', '夜间或多人时使用；黑色模范车更贵。', '50–80 分钟', '$50–$90'],
+  ],
+  hongkong: [
+    ['机场快线', '机场→香港站/九龙站，最快最稳。', '24–30 分钟', '$15–$20'],
+    ['城巴 / 机场巴士', '覆盖港岛、九龙与新界，便宜但时间长。', '45–90 分钟', '$5–$8'],
+    ['出租车', '按表收费，过海隧道另计；多人行李合适。', '30–50 分钟', '$40–$70'],
+  ],
+  singapore: [
+    ['MRT 东西线', '樟宜机场→市区，换乘方便、便宜。', '30–45 分钟', '$2–$4'],
+    ['机场穿梭巴士', '直达部分酒店，适合行李多。', '30–60 分钟', '$7–$12'],
+    ['出租车 / Grab', '24 小时，夜间有附加费。', '20–35 分钟', '$15–$30'],
+  ],
+  bangkok: [
+    ['Airport Rail Link', '素万那普→Phaya Thai，换 BTS 进市区。', '30–45 分钟', '$2–$4'],
+    ['机场巴士 / 小巴', '覆盖考山路、暹罗等区域，便宜但看路况。', '45–90 分钟', '$3–$8'],
+    ['出租车 / Grab', '走高速另付过路费，先确认打表或一口价。', '30–60 分钟', '$10–$25'],
+  ],
+  bali: [
+    ['Grab / Blue Bird', '机场到水明漾/乌布，提前在 App 看价。', '30–90 分钟', '$8–$30'],
+    ['酒店接送', '度假酒店多提供付费接送，最省心。', '30–90 分钟', '$15–$40'],
+    ['出租车 / 包车', '认准正规柜台，避免无牌拉客。', '30–90 分钟', '$20–$50'],
+  ],
+  paris: [
+    ['RER B', '戴高乐→巴黎北站/拉丁区，快但注意行李。', '35–50 分钟', '$12–$15'],
+    ['Roissybus / 机场巴士', '戴高乐→歌剧院，适合酒店在右岸。', '60–75 分钟', '$15–$18'],
+    ['出租车', '固定价区间，按官方指示排队。', '45–70 分钟', '$55–$75'],
+  ],
+  london: [
+    ['Elizabeth line', '希思罗→市中心，速度快、可刷非接触卡。', '30–45 分钟', '$15–$20'],
+    ['Heathrow Express', '帕丁顿最快，但价格高。', '15–20 分钟', '$30–$40'],
+    ['出租车 / 网约车', '夜间或多人时使用，提前看预估价。', '45–80 分钟', '$60–$120'],
+  ],
+  rome: [
+    ['Leonardo Express', '菲乌米奇诺→Termini，30 分钟直达。', '30–35 分钟', '$15–$18'],
+    ['机场巴士', '到 Termini/梵蒂冈方向，便宜但看路况。', '50–70 分钟', '$7–$10'],
+    ['出租车', '固定价到市中心，认准官方排队点。', '40–60 分钟', '$50–$60'],
+  ],
+  istanbul: [
+    ['地铁 M11 / HAVABÜS', '新机场→市区，便宜但需换乘。', '45–75 分钟', '$2–$6'],
+    ['机场穿梭巴士', '直达塔克西姆/苏丹艾哈迈德等区域。', '60–90 分钟', '$6–$12'],
+    ['出租车 / 网约车', '优先用 App 或正规排队点，确认预估。', '45–75 分钟', '$20–$40'],
+  ],
+  newyork: [
+    ['AirTrain + 地铁', 'JFK→曼哈顿，便宜但需换乘。', '60–90 分钟', '$10–$12'],
+    ['机场巴士 / 长岛铁路', '看酒店位置选择，LIRR 更快。', '45–75 分钟', '$10–$20'],
+    ['出租车 / 网约车', '固定价或按表，晚间加价。', '45–80 分钟', '$50–$90'],
+  ],
+  dubai: [
+    ['地铁红线', '机场→市中心/码头区，干净便宜。', '30–50 分钟', '$2–$4'],
+    ['机场巴士', '覆盖主要酒店，班次有限。', '45–75 分钟', '$3–$6'],
+    ['出租车 / Careem', '24 小时，起步价与夜间费不同。', '20–40 分钟', '$10–$25'],
+  ],
+  cairo: [
+    ['机场巴士', '到市中心/解放广场，便宜但看路况。', '45–75 分钟', '$2–$4'],
+    ['出租车 / Careem', '用 App 看价，避免无牌拉客。', '30–60 分钟', '$5–$12'],
+    ['酒店接送', '首访或深夜抵达最省心。', '30–60 分钟', '$15–$30'],
+  ],
+};
+
+const TRAVEL_APPS = {
+  JP: [
+    { name: 'Google Maps', use: '地铁换乘、步行导航', url: 'https://maps.google.com/' },
+    { name: '乘换案内', use: '日本铁路/地铁精确换乘', url: 'https://www.jorudan.co.jp/' },
+    { name: 'Suica', use: '交通卡与便利店支付', url: 'https://www.jreast.co.jp/suica/' },
+    { name: 'Tabelog', use: '餐厅评分与预约', url: 'https://tabelog.com/' },
+    { name: 'Uber', use: '出租车叫车', url: 'https://www.uber.com/' },
+  ],
+  KR: [
+    { name: 'Naver Map', use: '韩国地图与公交', url: 'https://map.naver.com/' },
+    { name: 'KakaoMap', use: '步行/驾车导航', url: 'https://map.kakao.com/' },
+    { name: 'Kakao T', use: '出租车叫车', url: 'https://www.kakaomobility.com/' },
+    { name: 'T-money', use: '交通卡', url: 'https://www.tmoney.co.kr/' },
+    { name: 'Papago', use: '中韩翻译', url: 'https://papago.naver.com/' },
+  ],
+  CN: [
+    { name: '高德地图', use: '公交/地铁/打车', url: 'https://www.amap.com/' },
+    { name: '百度地图', use: '步行与实时公交', url: 'https://map.baidu.com/' },
+    { name: '滴滴出行', use: '网约车', url: 'https://www.didiglobal.com/' },
+    { name: '铁路 12306', use: '高铁/火车票', url: 'https://www.12306.cn/' },
+    { name: '大众点评', use: '餐厅与本地生活', url: 'https://www.dianping.com/' },
+  ],
+  SEA: [
+    { name: 'Grab', use: '打车、外卖与支付', url: 'https://www.grab.com/' },
+    { name: 'Google Maps', use: '地图与公交', url: 'https://maps.google.com/' },
+    { name: 'Klook', use: '门票与一日游', url: 'https://www.klook.com/' },
+    { name: 'Airalo', use: 'eSIM 上网', url: 'https://www.airalo.com/' },
+    { name: 'Google Translate', use: '离线翻译', url: 'https://translate.google.com/' },
+  ],
+  EU: [
+    { name: 'Google Maps', use: '地图与公交', url: 'https://maps.google.com/' },
+    { name: 'Citymapper', use: '大城市公共交通', url: 'https://citymapper.com/' },
+    { name: 'Omio', use: '跨国火车/巴士/航班', url: 'https://www.omio.com/' },
+    { name: 'Trainline', use: '欧洲铁路票', url: 'https://www.thetrainline.com/' },
+    { name: 'Bolt', use: '打车/滑板车', url: 'https://bolt.eu/' },
+  ],
+  US: [
+    { name: 'Google Maps', use: '驾车与公交', url: 'https://maps.google.com/' },
+    { name: 'Uber', use: '网约车', url: 'https://www.uber.com/' },
+    { name: 'Lyft', use: '网约车备选', url: 'https://www.lyft.com/' },
+    { name: 'Transit', use: '实时公交/地铁', url: 'https://transitapp.com/' },
+    { name: 'Airalo', use: 'eSIM 上网', url: 'https://www.airalo.com/' },
+  ],
+  AU: [
+    { name: 'Google Maps', use: '公交与驾车', url: 'https://maps.google.com/' },
+    { name: 'Uber', use: '网约车', url: 'https://www.uber.com/' },
+    { name: 'TripView', use: '悉尼/墨尔本公交', url: 'https://tripview.com.au/' },
+    { name: 'Airalo', use: 'eSIM 上网', url: 'https://www.airalo.com/' },
+  ],
+  ME: [
+    { name: 'Google Maps', use: '地图与公交', url: 'https://maps.google.com/' },
+    { name: 'Careem', use: '中东打车/外卖', url: 'https://www.careem.com/' },
+    { name: 'Uber', use: '网约车备选', url: 'https://www.uber.com/' },
+    { name: 'Airalo', use: 'eSIM 上网', url: 'https://www.airalo.com/' },
+  ],
+  DEFAULT: [
+    { name: 'Google Maps', use: '地图与公交', url: 'https://maps.google.com/' },
+    { name: 'Uber', use: '网约车', url: 'https://www.uber.com/' },
+    { name: 'Google Translate', use: '离线翻译', url: 'https://translate.google.com/' },
+    { name: 'Airalo', use: 'eSIM 上网', url: 'https://www.airalo.com/' },
+  ],
+};
+
+function resolveOrigin(input) {
+  const raw = String(input ?? '').trim() || '上海';
+  const normalized = normalizeCityName(raw);
+  const hub = ORIGIN_HUBS.find((item) => item.aliases.some((alias) => normalizeCityName(alias) === normalized));
+  return hub ?? { name: raw, code: '—', short: '', lat: null, lon: null };
+}
+
+function cityKeyFor(city) {
+  if (city?.key && AIRPORT_INFO[city.key]) return city.key;
+  const zh = normalizeCityName(city?.zh);
+  const en = normalizeCityName(city?.en);
+  for (const key of Object.keys(AIRPORT_INFO)) {
+    const candidate = CITIES[key];
+    if (!candidate) continue;
+    if ((zh && normalizeCityName(candidate.zh) === zh) || (en && normalizeCityName(candidate.en) === en)) return key;
+  }
+  return null;
+}
+
+function haversineKm(lat1, lon1, lat2, lon2) {
+  if ([lat1, lon1, lat2, lon2].some((value) => value === null || value === undefined || value === '' || !Number.isFinite(Number(value)))) return null;
+  const toRad = (value) => (Number(value) * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2
+    + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return Math.round(6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+function formatHours(hours) {
+  if (!Number.isFinite(hours)) return '视航线而定';
+  const whole = Math.floor(hours);
+  const minutes = Math.round((hours - whole) * 60);
+  return minutes >= 20 ? `约 ${whole} 小时 ${minutes} 分` : `约 ${whole} 小时`;
+}
+
+function flightPrice(distance, factor = 1) {
+  const base = distance ? 60 + distance * 0.12 : 520;
+  const low = Math.max(80, Math.round((base * 0.8 * factor) / 10) * 10);
+  const high = Math.max(low + 60, Math.round((base * 1.6 * factor) / 10) * 10);
+  return { low, high };
+}
+
+function carriersFor(cc) {
+  const europe = new Set(['FR', 'GB', 'IT', 'ES', 'DE', 'NL', 'PT', 'GR', 'CH', 'AT', 'BE', 'DK', 'SE', 'NO', 'FI', 'IE', 'PL', 'CZ', 'HU']);
+  if (cc === 'JP') return '东航/上航、全日空 ANA、日本航空 JAL、春秋航空';
+  if (cc === 'KR') return '东航、大韩航空、韩亚航空、春秋航空';
+  if (cc === 'TH') return '东航/南航、泰国国际航空、亚航、春秋';
+  if (cc === 'SG') return '东航/南航、新加坡航空、酷航、亚航';
+  if (cc === 'ID') return '南航/东航、鹰航、亚航、酷航';
+  if (cc === 'MY') return '南航/东航、马航、亚航';
+  if (cc === 'AE') return '国航/东航、阿联酋航空、卡塔尔航空';
+  if (cc === 'TR') return '国航/东航、土耳其航空、阿联酋/卡塔尔中转';
+  if (europe.has(cc)) return '国航/东航、汉莎/法航/荷航、卡塔尔/阿联酋中转';
+  if (cc === 'US' || cc === 'CA') return '国航/东航、美联航/达美/加航、国泰/大韩中转';
+  if (cc === 'AU') return '东航/南航、澳航、新加坡/香港中转';
+  return '中国主要航司、目的地载旗航司、中东/香港中转';
+}
+
+function buildFlights(origin, city) {
+  const from = resolveOrigin(origin);
+  const key = cityKeyFor(city);
+  const dest = AIRPORT_INFO[key] ?? { code: '—', label: '主要国际机场' };
+  const distance = haversineKm(from.lat, from.lon, city.lat, city.lon);
+  const directHours = distance ? Math.max(1.5, distance / 850 + 0.6) : null;
+  const transferHours = directHours ? directHours + (distance > 8000 ? 4.5 : 3) : null;
+  const longHaul = distance != null && distance > 10000;
+  const carriers = carriersFor(city.cc);
+  const directPrice = flightPrice(distance);
+  const transferPrice = flightPrice(distance, 0.72);
+  const budgetPrice = flightPrice(distance, 0.62);
+  const options = [];
+
+  options.push({
+    kind: 'direct',
+    title: longHaul ? '直飞（如有）' : '直飞优先',
+    carriers,
+    duration: formatHours(directHours),
+    priceLow: directPrice.low,
+    priceHigh: directPrice.high,
+    pros: longHaul ? '总耗时最短，适合假期有限或不想折腾的行程。' : '总耗时最短，行李直挂，抵达当天状态更好。',
+    cons: longHaul ? '长航线直飞班次少，价格通常明显高于中转。' : '旺季与周末价格高；部分二线城市不是每天有班。',
+  });
+  options.push({
+    kind: 'transfer',
+    title: '一次中转',
+    carriers: '经香港/首尔/新加坡/多哈/迪拜等枢纽中转，常见组合',
+    duration: formatHours(transferHours),
+    priceLow: transferPrice.low,
+    priceHigh: transferPrice.high,
+    pros: '通常更便宜，部分枢纽可顺路停留或购物。',
+    cons: '总时长增加 3–7 小时；注意行李是否直挂、转机签证与误机风险。',
+  });
+  if (distance == null || distance < 6000) {
+    options.push({
+      kind: 'budget',
+      title: '廉航 / 红眼',
+      carriers: '春秋、亚航、酷航等低成本航司（视航线）',
+      duration: formatHours(directHours ? directHours + 0.3 : null),
+      priceLow: budgetPrice.low,
+      priceHigh: budgetPrice.high,
+      pros: '价格最低，适合轻装短途与日期灵活的人。',
+      cons: '行李、选座、餐食另计；红眼航班会影响第一天状态。',
+    });
+  }
+
+  const fromCode = from.short || '';
+  const toCode = (dest.code || '').split('/')[0].trim();
+  const destinationName = city.zh || city.en || city.name || '目的地';
+  const googleQuery = encodeURIComponent(`Flights from ${from.name} to ${destinationName}`);
+  const search = [
+    { name: 'Google Flights', url: `https://www.google.com/travel/flights?q=${googleQuery}`, note: '看航线全景与日期价格曲线' },
+    {
+      name: 'Skyscanner',
+      url: fromCode && toCode && toCode !== '—' ? `https://www.skyscanner.net/transport/flights/${fromCode}/${toCode}/` : 'https://www.skyscanner.net/',
+      note: '跨平台比价，选择日期后看含税总价',
+    },
+    {
+      name: 'Kayak',
+      url: fromCode && toCode && toCode !== '—' ? `https://www.kayak.com/flights/${fromCode}-${toCode}` : 'https://www.kayak.com/flights',
+      note: '组合比价，适合查中转方案',
+    },
+    {
+      name: '去哪儿',
+      url: `https://flight.qunar.com/site/oneway_list.htm?searchDepartureAirport=${encodeURIComponent(from.name)}&searchArrivalAirport=${encodeURIComponent(destinationName)}`,
+      note: '中国出发含税价与退改规则',
+    },
+    { name: '携程', url: 'https://flights.ctrip.com/', note: '中文客服、发票与行程保障' },
+    { name: '飞猪', url: 'https://www.fliggy.com/', note: '平台补贴与酒店打包' },
+  ];
+
+  return {
+    origin: from.name,
+    originCode: from.code,
+    destinationCode: dest.code,
+    airport: dest.label,
+    distanceKm: distance,
+    directPossible: distance == null || distance < 15000,
+    directDuration: formatHours(directHours),
+    options,
+    search,
+    note: '机票为经济舱含税参考区间，不含行李、选座与改签；实际价格随日期、转机与退改规则变化，以下单页为准。',
+  };
+}
+
+function buildStays(city, days, budgetKey) {
+  const budget = BUDGETS[budgetKey] ?? BUDGETS.comfort;
+  const key = cityKeyFor(city);
+  const curated = STAY_AREAS[key];
+  let areas;
+  if (curated?.length) {
+    areas = curated.map(([name, vibe, bestFor, commute, tip, factor]) => ({
+      name,
+      vibe,
+      bestFor,
+      commute,
+      tip,
+      priceLow: Math.max(10, Math.round((budget.hotel[0] * factor) / 5) * 5),
+      priceHigh: Math.max(15, Math.round((budget.hotel[1] * factor) / 5) * 5),
+    }));
+  } else {
+    const seen = new Set();
+    const names = [];
+    for (const poi of attachPois(city).pois) {
+      const area = String(poi[1] ?? '').trim();
+      if (area && !seen.has(area)) { seen.add(area); names.push(area); }
+      if (names.length >= 3) break;
+    }
+    areas = (names.length ? names : ['市中心', '老城/历史区', '安静住宅区']).map((name, index) => {
+      const factor = index === 0 ? 1.1 : index === 1 ? 1.0 : 0.92;
+      return {
+        name,
+        vibe: index === 0 ? '市中心 / 交通' : index === 1 ? '老城 / 本地生活' : '安静 / 性价比',
+        bestFor: index === 0 ? '首访、交通优先' : index === 1 ? '人文、美食、步行' : '长住、预算控制',
+        commute: index === 0 ? '靠近地铁/公交枢纽，去主要景点方便' : index === 1 ? '步行密度高，适合慢慢逛' : '通勤时间略长，换安静与价格',
+        tip: '先用地图看酒店到最近地铁站/公交站的步行时间，再看评价中的隔音与热水。',
+        priceLow: Math.max(10, Math.round((budget.hotel[0] * factor) / 5) * 5),
+        priceHigh: Math.max(15, Math.round((budget.hotel[1] * factor) / 5) * 5),
+      };
+    });
+  }
+
+  const cityName = city.zh || city.en || '目的地';
+  const bookingQuery = encodeURIComponent(cityName);
+  const search = [
+    { name: 'Booking.com', url: `https://www.booking.com/searchresults.html?ss=${bookingQuery}`, note: '国际酒店库存与免费取消筛选' },
+    { name: 'Agoda', url: 'https://www.agoda.com/', note: '亚太酒店常有折扣，注意含税价' },
+    { name: 'Airbnb', url: `https://www.airbnb.com/s/${bookingQuery}/homes`, note: '民宿/公寓，适合家庭与长住' },
+    { name: 'Google Hotels', url: `https://www.google.com/travel/hotels?q=${encodeURIComponent(`Hotels in ${cityName}`)}`, note: '跨平台比价与地图位置' },
+    { name: '携程', url: 'https://hotels.ctrip.com/', note: '中文客服、发票与国内支付' },
+    { name: '飞猪', url: 'https://www.fliggy.com/hotel/', note: '酒店套餐与会员权益' },
+  ];
+
+  return {
+    areas,
+    types: [
+      { name: '交通枢纽型', desc: '地铁/机场线旁，行李多、赶早班机时最省心。', bestFor: '首访、短途、行李多' },
+      { name: '街区体验型', desc: '老城或设计街区，步行密度高，适合人文与美食。', bestFor: '人文、美食、摄影' },
+      { name: '公寓/民宿型', desc: '适合家庭或 3 晚以上，注意清洁费、押金与入住时间。', bestFor: '家庭、长住、预算控制' },
+    ],
+    nights: Math.max(1, Number(days) || 1) - 1,
+    search,
+    note: '住宿为每晚参考区间，按双人标准间估算；不含城市税、度假费、清洁费与早餐。先看取消政策与到店时间。',
+  };
+}
+
+function appGroupFor(cc) {
+  if (cc === 'JP') return 'JP';
+  if (cc === 'KR') return 'KR';
+  if (cc === 'CN' || cc === 'HK' || cc === 'MO' || cc === 'TW') return 'CN';
+  if (['TH', 'SG', 'MY', 'ID', 'PH', 'VN', 'KH', 'LA'].includes(cc)) return 'SEA';
+  if (['FR', 'GB', 'IT', 'ES', 'DE', 'NL', 'PT', 'GR', 'CH', 'AT', 'BE', 'DK', 'SE', 'NO', 'FI', 'IE', 'PL', 'CZ', 'HU'].includes(cc)) return 'EU';
+  if (['US', 'CA'].includes(cc)) return 'US';
+  if (cc === 'AU' || cc === 'NZ') return 'AU';
+  if (['AE', 'QA', 'SA', 'TR', 'EG', 'ZA', 'MA', 'KE', 'IL'].includes(cc)) return 'ME';
+  return 'DEFAULT';
+}
+
+function buildGround(city) {
+  const key = cityKeyFor(city);
+  const genericAirport = [
+    ['机场轨道 / 快线', '优先选择机场快线或地铁，避开高峰堵车。', '30–60 分钟', '$3–$15'],
+    ['机场巴士', '适合行李多、酒店在站点附近；确认末班时间。', '45–90 分钟', '$5–$20'],
+    ['出租车 / 网约车', '选择正规排队点或 App；夜间加价，先确认预估。', '30–60 分钟', '$20–$60'],
+  ];
+  const airport = (AIRPORT_TRANSFERS[key] ?? genericAirport).map(([mode, detail, time, price]) => ({ mode, detail, time, price }));
+  const apps = TRAVEL_APPS[appGroupFor(city.cc)] ?? TRAVEL_APPS.DEFAULT;
+  return {
+    airport,
+    transitCard: city.transit || '当地交通卡 / 非接触支付',
+    apps,
+    tips: [
+      '机场到市区优先轨道或机场巴士；深夜抵达选正规出租车/网约车。',
+      '下载离线地图，保存酒店地址的当地语言写法。',
+      '跨城交通提前查班次：欧洲用 Omio/Trainline，日本用乘换案内，中国用 12306。',
+      '打车前确认车牌、司机与预估价，避免无牌拉客。',
+      '中国公民可保存外交部 12308 热线与当地使领馆联系方式。',
+    ],
+  };
+}
+
+function buildPlatforms(city) {
+  const cityName = city.zh || city.en || '目的地';
+  const q = encodeURIComponent(cityName);
+  return {
+    flights: [
+      { name: 'Google Flights', url: `https://www.google.com/travel/flights?q=${encodeURIComponent(`Flights to ${cityName}`)}`, strength: '航线全景与价格日历', note: '先看直飞/中转，再决定日期' },
+      { name: 'Skyscanner', url: 'https://www.skyscanner.net/', strength: '跨平台比价', note: '看含税总价与行李规则' },
+      { name: 'Kayak', url: 'https://www.kayak.com/flights', strength: '组合比价', note: '适合查中转与多程' },
+      { name: '携程', url: 'https://flights.ctrip.com/', strength: '中文客服与发票', note: '退改签与行程保障' },
+      { name: '飞猪', url: 'https://www.fliggy.com/', strength: '平台补贴/套餐', note: '机酒打包时比价' },
+      { name: '去哪儿', url: 'https://flight.qunar.com/', strength: '中国出发比价', note: '注意低价舱位限制' },
+    ],
+    stays: [
+      { name: 'Booking.com', url: `https://www.booking.com/searchresults.html?ss=${q}`, strength: '国际酒店库存', note: '免费取消筛选很实用' },
+      { name: 'Agoda', url: 'https://www.agoda.com/', strength: '亚太酒店折扣', note: '注意是否含税/含早' },
+      { name: 'Airbnb', url: `https://www.airbnb.com/s/${q}/homes`, strength: '民宿/公寓', note: '看清清洁费与入住时间' },
+      { name: 'Google Hotels', url: `https://www.google.com/travel/hotels?q=${encodeURIComponent(`Hotels in ${cityName}`)}`, strength: '跨平台比价', note: '地图位置与评价一起看' },
+      { name: '携程', url: 'https://hotels.ctrip.com/', strength: '中文客服/发票', note: '国内支付与售后方便' },
+      { name: '飞猪', url: 'https://www.fliggy.com/hotel/', strength: '套餐/会员价', note: '适合机酒打包' },
+    ],
+    transport: [
+      { name: 'Google Maps', url: 'https://maps.google.com/', strength: '全球地图/公交', note: '离线地图提前下载' },
+      { name: 'Citymapper', url: 'https://citymapper.com/', strength: '大城市公共交通', note: '换乘方案比地图更直观' },
+      { name: 'Omio', url: 'https://www.omio.com/', strength: '欧洲跨国交通', note: '火车/巴士/航班一起比' },
+      { name: 'Trainline', url: 'https://www.thetrainline.com/', strength: '欧洲铁路票', note: '提前买有便宜票' },
+      { name: 'Uber', url: 'https://www.uber.com/', strength: '全球网约车', note: '先看预估与安全功能' },
+      { name: 'Grab', url: 'https://www.grab.com/', strength: '东南亚打车/外卖', note: '可绑定支付宝/信用卡' },
+      { name: '高德地图', url: 'https://www.amap.com/', strength: '中国公交/打车', note: '实时公交与限行提示' },
+      { name: '滴滴出行', url: 'https://www.didiglobal.com/', strength: '中国/部分海外网约车', note: '行程分享与紧急联系人' },
+    ],
+    verdict: {
+      flights: '先用 Google Flights 看航线与日期，再用 Skyscanner/Kayak 比含税价；中国出发在携程/飞猪/去哪儿核对退改与行李。',
+      stays: '国际酒店用 Booking + Agoda 比价，民宿用 Airbnb；需要中文客服/发票再看携程/飞猪。',
+      transport: '地图用 Google Maps + Citymapper；城际铁路用 Omio/Trainline；打车用 Uber/Grab/Bolt；中国用高德/滴滴。',
+    },
+    note: '平台链接为公开搜索入口，不含返利；价格为参考区间，以下单页实时报价为准。',
+  };
+}
+
+async function planTrip(ctx, destination, days, budgetKey, pace, interests, bypass, origin = '上海') {
+  const normalizedOrigin = String(origin ?? '').trim() || '上海';
+  const cacheKey = `plan:${destination}|${days}|${budgetKey}|${pace}|${interests.join(',')}|${normalizedOrigin}`;
   const cached = recall(cacheKey, bypass);
   if (cached) return { ...cached, cached: true };
 
@@ -1552,10 +2142,15 @@ async function planTrip(ctx, destination, days, budgetKey, pace, interests, bypa
   }
 
   const itinerary = buildItinerary(withPois, days, pace, interests, weather);
+  const flights = buildFlights(normalizedOrigin, withPois);
+  const stays = buildStays(withPois, days, budgetKey);
+  const ground = buildGround(withPois);
+  const platforms = buildPlatforms(withPois);
   const value = {
     ok: true,
     generatedAt: new Date().toISOString(),
     blocked: false,
+    origin: normalizedOrigin,
     destination: {
       name: withPois.zh || withPois.en,
       country: withPois.country || risk.name,
@@ -1570,6 +2165,10 @@ async function planTrip(ctx, destination, days, budgetKey, pace, interests, bypa
     weather,
     itinerary,
     budget: buildBudget(days, budgetKey),
+    flights,
+    stays,
+    ground,
+    platforms,
     packing: packingList(weather, withPois),
     transport: withPois.transit
       ? `市内以${withPois.transit}为主；机场/车站到市区优先轨道或正规机场巴士，避免无牌拉客。`
@@ -1630,7 +2229,7 @@ export function apply(ctx) {
       sendJson(res, 200, {
         ok: true,
         service: NS,
-        version: '1.0.0',
+        version: '1.1.0',
         now: new Date().toISOString(),
         web: typeof host.web?.search === 'function' && typeof host.web?.fetch === 'function',
       });
@@ -1669,7 +2268,8 @@ export function apply(ctx) {
         ? url.searchParams.get('pace')
         : 'balanced';
       const interests = pickInterests(url.searchParams.get('interests'));
-      const plan = await planTrip(host, destination, days, budget, pace, interests, boolParam(url.searchParams.get('refresh')));
+      const origin = clean(url.searchParams.get('origin') ?? '上海', 40) || '上海';
+      const plan = await planTrip(host, destination, days, budget, pace, interests, boolParam(url.searchParams.get('refresh')), origin);
       const status = plan.ok ? 200 : plan.code === 'not_found' ? 404 : 502;
       sendJson(res, status, plan);
     });

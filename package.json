@@ -1,8 +1,25 @@
 {
   "name": "@local/worldpulse",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "WorldPulse — live world news, situation analysis, and worldwide trip planning for DSH.",
+  "license": "MIT",
+  "author": "lucakaneshiro1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lucakaneshiro1/worldpulse.git"
+  },
+  "homepage": "https://github.com/lucakaneshiro1/worldpulse#readme",
+  "bugs": {
+    "url": "https://github.com/lucakaneshiro1/worldpulse/issues"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "worldpulse",
+    "news",
+    "travel"
+  ],
   "type": "module",
   "exports": {
     ".": "./index.js",
@@ -17,7 +34,8 @@
     "locale/*.json",
     "icon.svg",
     "assets/*.png",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "dsh": {
     "bundle": {
@@ -27,13 +45,5 @@
       "platform": "web",
       "immediately": true
     }
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/lucakaneshiro1/worldpulse.git"
-  },
-  "homepage": "https://github.com/lucakaneshiro1/worldpulse#readme",
-  "bugs": {
-    "url": "https://github.com/lucakaneshiro1/worldpulse/issues"
   }
 }
