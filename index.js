@@ -1320,9 +1320,9 @@ const ALTERNATIVES = {
 };
 
 const BUDGETS = {
-  value: { label: '经济', hotel: [25, 55], food: [12, 28], transport: [4, 10], tickets: [6, 18] },
-  comfort: { label: '舒适', hotel: [70, 140], food: [30, 65], transport: [10, 25], tickets: [15, 35] },
-  luxury: { label: '奢华', hotel: [180, 420], food: [70, 160], transport: [30, 80], tickets: [30, 70] },
+  value: { label: '经济', hotel: [180, 400], food: [90, 200], transport: [30, 70], tickets: [45, 130] },
+  comfort: { label: '舒适', hotel: [500, 1000], food: [220, 470], transport: [70, 180], tickets: [110, 250] },
+  luxury: { label: '奢华', hotel: [1300, 3000], food: [500, 1150], transport: [220, 580], tickets: [220, 500] },
 };
 
 const PACE_LABELS = { relaxed: '轻松', balanced: '均衡', packed: '紧凑' };
@@ -1486,10 +1486,10 @@ function buildBudget(days, budgetKey) {
   return {
     tier: budgetKey,
     label: budget.label,
-    currency: 'USD',
+    currency: 'CNY',
     perDay: { low: dailyLow, high: dailyHigh },
     total: { low: dailyLow * days, high: dailyHigh * days },
-    note: '按每人每天估算，含住宿、餐饮、市内交通与门票，不含国际机票、签证、保险与购物。实际价格随季节与城市差异较大。',
+    note: '按每人每天估算（人民币），含住宿、餐饮、市内交通与门票，不含国际机票、签证、保险与购物。实际价格随季节与城市差异较大。',
   };
 }
 
@@ -1515,6 +1515,265 @@ const ORIGIN_HUBS = [
   { name: '昆明', code: 'KMG', short: 'KMG', lat: 25.0389, lon: 102.7183, aliases: ['昆明', 'kunming', 'kmg'] },
   { name: '乌鲁木齐', code: 'URC', short: 'URC', lat: 43.8256, lon: 87.6168, aliases: ['乌鲁木齐', 'urumqi', 'urc'] },
 ];
+
+/* Nationwide flight-query city table: mainland + Hong Kong + Macau + Taiwan. */
+const FLIGHT_CITY_ROWS = [
+  ['北京', 'Beijing', 'BJS', '首都 PEK / 大兴 PKX', 39.9042, 116.4074, 'CN'],
+  ['上海', 'Shanghai', 'SHA', '浦东 PVG / 虹桥 SHA', 31.2304, 121.4737, 'CN'],
+  ['广州', 'Guangzhou', 'CAN', '白云 CAN', 23.1291, 113.2644, 'CN'],
+  ['深圳', 'Shenzhen', 'SZX', '宝安 SZX', 22.5431, 114.0579, 'CN'],
+  ['成都', 'Chengdu', 'CTU', '天府 TFU / 双流 CTU', 30.5728, 104.0668, 'CN'],
+  ['重庆', 'Chongqing', 'CKG', '江北 CKG', 29.563, 106.5516, 'CN'],
+  ['杭州', 'Hangzhou', 'HGH', '萧山 HGH', 30.2741, 120.1551, 'CN'],
+  ['南京', 'Nanjing', 'NKG', '禄口 NKG', 32.0603, 118.7969, 'CN'],
+  ['武汉', 'Wuhan', 'WUH', '天河 WUH', 30.5928, 114.3055, 'CN'],
+  ['西安', "Xi'an", 'XIY', '咸阳 XIY', 34.3416, 108.9398, 'CN'],
+  ['天津', 'Tianjin', 'TSN', '滨海 TSN', 39.3434, 117.3616, 'CN'],
+  ['郑州', 'Zhengzhou', 'CGO', '新郑 CGO', 34.7466, 113.6254, 'CN'],
+  ['长沙', 'Changsha', 'CSX', '黄花 CSX', 28.2282, 112.9388, 'CN'],
+  ['青岛', 'Qingdao', 'TAO', '胶东 TAO', 36.0671, 120.3826, 'CN'],
+  ['厦门', 'Xiamen', 'XMN', '高崎 XMN', 24.4798, 118.0894, 'CN'],
+  ['福州', 'Fuzhou', 'FOC', '长乐 FOC', 26.0745, 119.2965, 'CN'],
+  ['济南', 'Jinan', 'TNA', '遥墙 TNA', 36.6512, 117.1201, 'CN'],
+  ['昆明', 'Kunming', 'KMG', '长水 KMG', 25.0389, 102.7183, 'CN'],
+  ['贵阳', 'Guiyang', 'KWE', '龙洞堡 KWE', 26.647, 106.6302, 'CN'],
+  ['南宁', 'Nanning', 'NNG', '吴圩 NNG', 22.817, 108.3665, 'CN'],
+  ['海口', 'Haikou', 'HAK', '美兰 HAK', 20.044, 110.1999, 'CN'],
+  ['三亚', 'Sanya', 'SYX', '凤凰 SYX', 18.2528, 109.5119, 'CN'],
+  ['沈阳', 'Shenyang', 'SHE', '桃仙 SHE', 41.8057, 123.4315, 'CN'],
+  ['大连', 'Dalian', 'DLC', '周水子 DLC', 38.914, 121.6147, 'CN'],
+  ['哈尔滨', 'Harbin', 'HRB', '太平 HRB', 45.8038, 126.5349, 'CN'],
+  ['长春', 'Changchun', 'CGQ', '龙嘉 CGQ', 43.8171, 125.3235, 'CN'],
+  ['呼和浩特', 'Hohhot', 'HET', '白塔 HET', 40.8426, 111.7492, 'CN'],
+  ['太原', 'Taiyuan', 'TYN', '武宿 TYN', 37.8706, 112.5489, 'CN'],
+  ['石家庄', 'Shijiazhuang', 'SJW', '正定 SJW', 38.0428, 114.5149, 'CN'],
+  ['合肥', 'Hefei', 'HFE', '新桥 HFE', 31.8206, 117.2272, 'CN'],
+  ['南昌', 'Nanchang', 'KHN', '昌北 KHN', 28.682, 115.8579, 'CN'],
+  ['兰州', 'Lanzhou', 'LHW', '中川 LHW', 36.0611, 103.8343, 'CN'],
+  ['西宁', 'Xining', 'XNN', '曹家堡 XNN', 36.6171, 101.7782, 'CN'],
+  ['银川', 'Yinchuan', 'INC', '河东 INC', 38.4872, 106.2309, 'CN'],
+  ['乌鲁木齐', 'Urumqi', 'URC', '地窝堡 URC', 43.8256, 87.6168, 'CN'],
+  ['拉萨', 'Lhasa', 'LXA', '贡嘎 LXA', 29.652, 91.1721, 'CN'],
+  ['宁波', 'Ningbo', 'NGB', '栎社 NGB', 29.8683, 121.544, 'CN'],
+  ['温州', 'Wenzhou', 'WNZ', '龙湾 WNZ', 27.9938, 120.6994, 'CN'],
+  ['无锡', 'Wuxi', 'WUX', '硕放 WUX', 31.4912, 120.3119, 'CN'],
+  ['珠海', 'Zhuhai', 'ZUH', '金湾 ZUH', 22.271, 113.5767, 'CN'],
+  ['桂林', 'Guilin', 'KWL', '两江 KWL', 25.2736, 110.29, 'CN'],
+  ['汕头', 'Shantou', 'SWA', '揭阳 SWA', 23.3541, 116.6819, 'CN'],
+  ['湛江', 'Zhanjiang', 'ZHA', '吴川 ZHA', 21.2707, 110.3594, 'CN'],
+  ['丽江', 'Lijiang', 'LJG', '三义 LJG', 26.8721, 100.233, 'CN'],
+  ['西双版纳', 'Xishuangbanna', 'JHG', '嘎洒 JHG', 21.973, 100.76, 'CN'],
+  ['张家界', 'Zhangjiajie', 'DYG', '荷花 DYG', 29.1028, 110.4789, 'CN'],
+  ['香港', 'Hong Kong', 'HKG', '香港 HKG', 22.3193, 114.1694, 'HK'],
+  ['澳门', 'Macau', 'MFM', '澳门 MFM', 22.1987, 113.5439, 'MO'],
+  ['台北', 'Taipei', 'TPE', '桃园 TPE / 松山 TSA', 25.033, 121.5654, 'TW'],
+  ['高雄', 'Kaohsiung', 'KHH', '小港 KHH', 22.6273, 120.3014, 'TW'],
+  ['台中', 'Taichung', 'RMQ', '清泉岗 RMQ', 24.1477, 120.6736, 'TW'],
+  ['台南', 'Tainan', 'TNN', '台南 TNN', 22.9999, 120.2269, 'TW'],
+  ['花莲', 'Hualien', 'HUN', '花莲 HUN', 23.9911, 121.6112, 'TW'],
+  ['金门', 'Kinmen', 'KNH', '尚义 KNH', 24.4321, 118.3171, 'TW'],
+  ['澎湖', 'Magong', 'MZG', '马公 MZG', 23.5667, 119.5833, 'TW'],
+  ['台东', 'Taitung', 'TTT', '丰年 TTT', 22.7554, 121.15, 'TW'],
+  ['嘉义', 'Chiayi', 'CYI', '水上 CYI', 23.4801, 120.4491, 'TW'],
+];
+
+const FLIGHT_CITIES = FLIGHT_CITY_ROWS.map(([name, en, code, airport, lat, lon, region]) => ({
+  name, en, code, airport, lat, lon, region,
+  aliases: [name, en, code, ...(airport.match(/\b[A-Z]{3}\b/g) ?? [])],
+}));
+
+const FLIGHT_CITY_INDEX = new Map();
+for (const city of FLIGHT_CITIES) {
+  for (const alias of city.aliases) {
+    const key = normalizeCityName(alias);
+    if (key) FLIGHT_CITY_INDEX.set(key, city);
+  }
+}
+
+function resolveFlightCity(input) {
+  const text = String(input ?? '').trim();
+  if (!text) return null;
+  return FLIGHT_CITY_INDEX.get(normalizeCityName(text)) ?? null;
+}
+
+function publicFlightCity(city) {
+  return {
+    name: city.name,
+    en: city.en,
+    code: city.code,
+    airport: city.airport,
+    region: city.region,
+    regionLabel: city.region === 'HK' ? '香港' : city.region === 'MO' ? '澳门' : city.region === 'TW' ? '台湾' : '大陆',
+  };
+}
+
+const FLIGHT_CARRIERS = {
+  CN: ['国航', '东航', '南航', '海航', '川航', '厦航', '深航', '山航', '吉祥', '春秋'],
+  HK: ['国泰', '香港航空', '大湾区航空'],
+  MO: ['澳门航空', '春秋'],
+  TW: ['华航', '长荣', '星宇', '台湾虎航'],
+};
+
+function flightCarriers(from, to) {
+  const regions = new Set([from.region, to.region]);
+  if (regions.has('TW')) return '华航、长荣、星宇，配合东航/厦航/国航';
+  if (regions.has('HK') || regions.has('MO')) return '国泰/香港航空/澳门航空，配合东航/南航';
+  return '国航、东航、南航、海航、川航/厦航/深航（视航线）';
+}
+
+function flightCnyPrice(distance, factor = 1) {
+  const base = 180 + Math.max(0, Number(distance) || 0) * 0.52;
+  return Math.round((base * factor) / 10) * 10;
+}
+
+function flightDurationHours(distance) {
+  return Math.max(0.9, Number(distance || 0) / 750 + 0.45);
+}
+
+function buildFlightQueryLinks(from, to, date) {
+  const f = from.code.toLowerCase();
+  const t = to.code.toLowerCase();
+  const compactDate = date.replace(/-/g, '');
+  const googleQuery = encodeURIComponent(`Flights from ${from.en} to ${to.en} on ${date}`);
+  return [
+    { name: '携程', url: `https://flights.ctrip.com/online/list/oneway-${f}-${t}?depdate=${date}`, strength: '国内航线全，退改规则清楚', note: '国内机票主渠道，港澳台航线也覆盖。' },
+    { name: '去哪儿', url: `https://flight.qunar.com/site/oneway_list.htm?searchDepartureAirport=${encodeURIComponent(from.name)}&searchArrivalAirport=${encodeURIComponent(to.name)}&searchDepartureTime=${date}`, strength: '比价快，低价航班多', note: '适合先看价格区间，再回官方渠道核对行李额。' },
+    { name: '飞猪', url: 'https://www.fliggy.com/flight/', strength: '阿里系，套餐和信用住联动', note: '适合机票+酒店一起比价。' },
+    { name: 'Trip.com', url: `https://www.trip.com/flights/showfarefirst?dcity=${f}&acity=${t}&ddate=${date}&triptype=ow`, strength: '港澳台/国际航线英文界面友好', note: '适合境外手机号或外卡支付。' },
+    { name: 'Google Flights', url: `https://www.google.com/travel/flights?q=${googleQuery}`, strength: '日期矩阵和价格趋势', note: '适合判断提前/推后一天是否更便宜。' },
+    { name: 'Skyscanner', url: `https://www.skyscanner.net/transport/flights/${f}/${t}/${compactDate.slice(2)}/`, strength: '全球比价，开口程灵活', note: '廉航覆盖较好，注意是否含托运行李。' },
+    { name: '飞常准', url: 'https://www.variflight.com/', strength: '航班动态与准点率', note: '查历史准点率、前序航班和延误。' },
+  ];
+}
+
+function buildFlightQueryOptions(from, to, distance) {
+  const directPossible = distance <= 3300;
+  const hours = flightDurationHours(distance);
+  const base = flightCnyPrice(distance);
+  const options = [];
+  if (directPossible) {
+    options.push({
+      kind: 'direct',
+      title: '直飞',
+      carriers: flightCarriers(from, to),
+      duration: formatHours(hours),
+      priceLow: Math.round(base * 0.72 / 10) * 10,
+      priceHigh: Math.round(base * 1.35 / 10) * 10,
+      pros: '耗时最短，行李直挂，误机风险低。',
+      cons: '黄金时段价格高，热门日期需早订。',
+    });
+  }
+  if (!directPossible || distance > 1600) {
+    options.push({
+      kind: 'transfer',
+      title: '枢纽中转',
+      carriers: '经上海/广州/深圳/香港等枢纽，航司组合以出票页为准',
+      duration: formatHours(hours + (distance > 2500 ? 3.8 : 2.6)),
+      priceLow: Math.round(base * 0.55 / 10) * 10,
+      priceHigh: Math.round(base * 0.95 / 10) * 10,
+      pros: '通常更便宜，航班选择更多。',
+      cons: '总耗时增加，需预留中转时间并确认行李是否直挂。',
+    });
+  }
+  if (directPossible && distance < 2200) {
+    options.push({
+      kind: 'budget',
+      title: '廉航/早班',
+      carriers: '春秋、吉祥、九元等（视航线）',
+      duration: formatHours(hours + 0.2),
+      priceLow: Math.round(base * 0.5 / 10) * 10,
+      priceHigh: Math.round(base * 0.8 / 10) * 10,
+      pros: '价格最低，适合轻装短途。',
+      cons: '行李额和退改限制多，机场可能较远。',
+    });
+  }
+  return options;
+}
+
+function buildFlightQuery(from, to, date) {
+  const distance = Math.round(haversineKm(from.lat, from.lon, to.lat, to.lon));
+  const direct = distance <= 3300;
+  return {
+    ok: true,
+    currency: 'CNY',
+    date,
+    from: publicFlightCity(from),
+    to: publicFlightCity(to),
+    distanceKm: distance,
+    direct,
+    duration: direct ? formatHours(flightDurationHours(distance)) : '通常需中转',
+    airlines: flightCarriers(from, to),
+    options: buildFlightQueryOptions(from, to, distance),
+    links: buildFlightQueryLinks(from, to, date),
+    note: '票价为经济舱参考区间，不含机建/燃油和行李费；实际以出票平台为准。港澳台航线请同时确认证件与签注。',
+  };
+}
+
+async function liveFlightSearch(ctx, from, to, date) {
+  const gate = abortAfter(9000);
+  try {
+    const result = await ctx.web.search({
+      query: `${from.name} 到 ${to.name} ${date} 航班 机票 时刻表`,
+      maxResults: 6,
+    }, gate.signal);
+    return (result.sources ?? [])
+      .filter((item) => safeUrl(item.url) && !isLowQualitySource(item.url, item.title ?? ''))
+      .filter((item) => {
+        const text = `${item.title ?? ''} ${item.snippet ?? ''}`;
+        return /航班|机票|时刻表|flight|airfare|航空|起降|直飞|中转/i.test(text);
+      })
+      .slice(0, 4)
+      .map((item) => ({
+        title: clean(item.title, 140) || '航班信息',
+        url: safeUrl(item.url),
+        source: sourceName(item.url),
+        snippet: clean(item.snippet, 220),
+        publishedAt: item.publishedAt ?? '',
+      }));
+  } catch {
+    return [];
+  } finally {
+    gate.done();
+  }
+}
+
+async function queryFlights(ctx, fromInput, toInput, date, bypass) {
+  const from = resolveFlightCity(fromInput);
+  const to = resolveFlightCity(toInput);
+  if (!from || !to) {
+    const missing = !from ? fromInput : toInput;
+    return {
+      ok: false,
+      code: 'not_found',
+      message: `暂未收录「${missing || '该城市'}」的机场。请从城市列表中选择，或改用邻近枢纽机场。`,
+      suggestions: FLIGHT_CITIES.slice(0, 12).map(publicFlightCity),
+    };
+  }
+  if (from.code === to.code) {
+    return { ok: false, code: 'same_city', message: '出发城市和到达城市相同，请重新选择。' };
+  }
+  const cacheKey = `flight:${from.code}:${to.code}:${date}`;
+  const cached = recall(cacheKey, bypass);
+  if (cached) return { ...cached, cached: true };
+  const payload = buildFlightQuery(from, to, date);
+  payload.live = await liveFlightSearch(ctx, from, to, date);
+  payload.liveError = payload.live.length ? null : '实时航班资讯暂不可用，已给出参考方案与查票入口。';
+  remember(cacheKey, payload, 5 * 60 * 1000);
+  return payload;
+}
+
+function chinaToday() {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' });
+}
+
+function cleanFlightDate(value) {
+  const raw = String(value ?? '').trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    const parsed = new Date(`${raw}T00:00:00+08:00`);
+    if (!Number.isNaN(parsed.getTime()) && raw >= chinaToday()) return raw;
+  }
+  return new Date(Date.now() + 86_400_000).toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' });
+}
 
 const AIRPORT_INFO = {
   tokyo: { code: 'TYO', label: '成田 NRT / 羽田 HND' },
@@ -1839,9 +2098,11 @@ function formatHours(hours) {
 }
 
 function flightPrice(distance, factor = 1) {
-  const base = distance ? 60 + distance * 0.12 : 520;
-  const low = Math.max(80, Math.round((base * 0.8 * factor) / 10) * 10);
-  const high = Math.max(low + 60, Math.round((base * 1.6 * factor) / 10) * 10);
+  // Reference economy fare in CNY; approximate USD base x 7.2.
+  const usdBase = distance ? 60 + distance * 0.12 : 520;
+  const base = usdBase * 7.2;
+  const low = Math.max(580, Math.round((base * 0.8 * factor) / 10) * 10);
+  const high = Math.max(low + 80, Math.round((base * 1.6 * factor) / 10) * 10);
   return { low, high };
 }
 
@@ -2229,10 +2490,31 @@ export function apply(ctx) {
       sendJson(res, 200, {
         ok: true,
         service: NS,
-        version: '1.1.0',
+        version: '1.2.0',
         now: new Date().toISOString(),
         web: typeof host.web?.search === 'function' && typeof host.web?.fetch === 'function',
       });
+    });
+
+    register('airports', async (_url, res) => {
+      sendJson(res, 200, {
+        ok: true,
+        count: FLIGHT_CITIES.length,
+        cities: FLIGHT_CITIES.map(publicFlightCity),
+      });
+    });
+
+    register('flights', async (url, res) => {
+      const from = clean(url.searchParams.get('from') ?? '', 40);
+      const to = clean(url.searchParams.get('to') ?? '', 40);
+      if (!from || !to) {
+        sendJson(res, 400, { ok: false, code: 'missing_route', message: '请选择出发城市和到达城市。' });
+        return;
+      }
+      const date = cleanFlightDate(url.searchParams.get('date'));
+      const payload = await queryFlights(host, from, to, date, boolParam(url.searchParams.get('refresh')));
+      const status = payload.ok ? 200 : payload.code === 'not_found' || payload.code === 'same_city' ? 404 : 502;
+      sendJson(res, status, payload);
     });
 
     register('news', async (url, res) => {

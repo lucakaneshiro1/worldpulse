@@ -40,6 +40,7 @@ window.__ModuleLoader__.load({
         navNews: '全球快讯',
         navBrief: '局势研判',
         navPlan: '行程规划',
+        navFlights: '航班查询',
         refresh: '刷新',
         refreshing: '更新中',
         live: '实时聚合',
@@ -187,6 +188,34 @@ window.__ModuleLoader__.load({
         platformTransport: '交通 / 地图',
         platformVerdict: '推荐组合',
         platformNote: '平台链接为公开搜索入口，不含返利；价格为参考区间，以下单页实时报价为准。',
+        flightQueryTitle: '全国航班查询',
+        flightQuerySub: '大陆 · 香港 · 澳门 · 台湾',
+        flightQueryText: '输入任意已收录城市，查看直飞/中转方案、参考票价和查票入口。价格不是实时库存，出票前请在各平台核对。',
+        flightFrom: '出发城市',
+        flightTo: '到达城市',
+        flightDate: '出发日期',
+        flightSwap: '交换',
+        flightSearchBtn: '查询航班',
+        flightSearching: '正在计算航线与查票入口…',
+        flightQueryEmpty: '选择出发地和目的地，开始查询。',
+        flightQueryNote: '参考价为经济舱单程含税区间，不含行李、选座与改签；实际以出票页为准。',
+        flightQueryLive: '实时航班资讯',
+        flightQueryNoLive: '实时资讯暂不可用，以下为参考方案与查票入口。',
+        flightQueryCities: '城市与机场',
+        flightQueryAll: '全部城市',
+        flightNonstop: '直飞',
+        flightVia: '中转',
+        flightBudgetOption: '廉航/早班',
+        flightAirlines: '主要航司',
+        flightDirectYes: '有直飞',
+        flightDirectNo: '通常需中转',
+        flightQueryPopular: '热门查询',
+        flightQueryCn: '中国大陆',
+        flightQueryHk: '香港',
+        flightQueryMo: '澳门',
+        flightQueryTw: '台湾',
+        flightSameCity: '出发城市和到达城市不能相同。',
+        flightNotFound: '暂未收录这个城市，请从下拉列表选择。',
         open: '打开',
         km: '公里',
         perNight: '/晚',        emergency: '紧急联系',
@@ -217,6 +246,7 @@ window.__ModuleLoader__.load({
         navNews: 'World feed',
         navBrief: 'Situation',
         navPlan: 'Trip planner',
+        navFlights: 'Flights',
         refresh: 'Refresh',
         refreshing: 'Updating',
         live: 'Live aggregation',
@@ -364,6 +394,34 @@ window.__ModuleLoader__.load({
         platformTransport: 'Transit / maps',
         platformVerdict: 'Recommended stack',
         platformNote: 'Public search entrances, no affiliate links; prices are reference ranges, the booking page is authoritative.',
+        flightQueryTitle: 'China flight search',
+        flightQuerySub: 'Mainland · Hong Kong · Macau · Taiwan',
+        flightQueryText: 'Pick any covered city to see nonstop/transfer options, reference fares and booking entrances. Fares are not live inventory; verify on the booking page.',
+        flightFrom: 'From',
+        flightTo: 'To',
+        flightDate: 'Departure date',
+        flightSwap: 'Swap',
+        flightSearchBtn: 'Search flights',
+        flightSearching: 'Calculating route and booking entrances…',
+        flightQueryEmpty: 'Choose an origin and destination to start.',
+        flightQueryNote: 'Reference economy one-way fare range, excluding bags, seat selection and changes; the booking page is authoritative.',
+        flightQueryLive: 'Live flight search',
+        flightQueryNoLive: 'Live search is unavailable; showing reference options and booking entrances.',
+        flightQueryCities: 'Cities & airports',
+        flightQueryAll: 'All cities',
+        flightNonstop: 'Nonstop',
+        flightVia: 'Transfer',
+        flightBudgetOption: 'Budget / early',
+        flightAirlines: 'Main airlines',
+        flightDirectYes: 'Nonstop available',
+        flightDirectNo: 'Usually requires a transfer',
+        flightQueryPopular: 'Popular routes',
+        flightQueryCn: 'Mainland China',
+        flightQueryHk: 'Hong Kong',
+        flightQueryMo: 'Macau',
+        flightQueryTw: 'Taiwan',
+        flightSameCity: 'Origin and destination must differ.',
+        flightNotFound: 'City not covered yet; choose from the list.',
         open: 'Open',
         km: 'km',
         perNight: '/night',
@@ -460,6 +518,11 @@ window.__ModuleLoader__.load({
       return low === high ? fmt(low) : `${fmt(low)}–${fmt(high)}`;
     }
 
+    function cny(low, high) {
+      const fmt = (value) => `¥${Number(value ?? 0).toLocaleString('zh-CN')}`;
+      return low === high ? fmt(low) : `${fmt(low)}–${fmt(high)}`;
+    }
+
     function weatherGlyph(code) {
       const value = Number(code ?? 0);
       if (value === 0 || value === 1) return 'sun';
@@ -518,6 +581,15 @@ window.__ModuleLoader__.load({
           h('circle', { cx: 6, cy: 18, r: 2 }),
           h('circle', { cx: 18, cy: 6, r: 2 }),
           h('path', { d: 'M8 18h3a3 3 0 0 0 3-3V9a3 3 0 0 1 3-3' }));
+      }
+      if (name === 'plane') {
+        return h('svg', common,
+          h('path', { d: 'M3.5 12.5l17-7.5-4 16-4.2-6.2-4 1.9.8-4.4z' }),
+          h('path', { d: 'M8.3 12.3L20.5 5' }));
+      }
+      if (name === 'swap') {
+        return h('svg', common,
+          h('path', { d: 'M7 7h12l-3-3M17 17H5l3 3' }));
       }
       if (name === 'refresh') {
         return h('svg', common,
@@ -897,10 +969,32 @@ window.__ModuleLoader__.load({
 .wp-platform-verdict{margin-top:10px;padding-top:9px;border-top:1px solid var(--dsw-alias-border-l1,rgba(0,0,0,.08));display:grid;gap:4px}
 .wp-platform-verdict p{font-size:9.8px;line-height:1.5;color:var(--dsw-alias-label-secondary,#697386);margin:0}
 .wp-platform-verdict b{color:var(--dsw-alias-label-primary,#111)}
+.wp-flight-view{display:flex;flex-direction:column;gap:14px}
+.wp-flight-search{padding:14px}
+.wp-flight-form{display:grid;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr) 150px auto;gap:8px;align-items:end}
+.wp-flight-form .wp-field{margin-bottom:0}
+.wp-flight-swap{height:34px;width:34px;align-self:end;justify-content:center}
+.wp-flight-swap svg{transform:rotate(90deg)}
+.wp-flight-result{display:flex;flex-direction:column;gap:12px}
+.wp-flight-result-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.wp-flight-result-head h2{font-size:20px;margin:3px 0;letter-spacing:-.03em}
+.wp-flight-result-head p{font-size:10.5px;color:var(--dsw-alias-label-secondary,#697386);margin:0}
+.wp-flight-badges{display:flex;gap:6px;flex-wrap:wrap}
+.wp-flight-badge{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;border:1px solid var(--dsw-alias-border-l1,rgba(0,0,0,.1));border-radius:999px;padding:4px 8px;background:var(--dsw-alias-bg-layer-1,#fff)}
+.wp-flight-badge[data-tone="good"]{color:#167a4b;border-color:rgba(22,122,75,.25);background:rgba(22,122,75,.07)}
+.wp-flight-badge[data-tone="warn"]{color:#9a6300;border-color:rgba(154,99,0,.25);background:rgba(154,99,0,.07)}
+.wp-flight-live{display:flex;flex-direction:column;gap:6px}
+.wp-flight-live a{display:block;border:1px solid var(--dsw-alias-border-l1,rgba(0,0,0,.08));border-radius:9px;padding:7px 8px;text-decoration:none;color:var(--dsw-alias-label-primary,#111)}
+.wp-flight-live a:hover{border-color:rgba(43,127,255,.4)}
+.wp-flight-live b{display:block;font-size:10.5px;line-height:1.45}
+.wp-flight-live span{display:block;font-size:9px;color:var(--dsw-alias-label-secondary,#697386);margin-top:2px}
+.wp-flight-live em{font-style:normal;color:var(--wp-brand);font-weight:700}
+.wp-flight-note{font-size:9.5px;line-height:1.55;color:var(--dsw-alias-label-secondary,#697386);margin:0}
+.wp-flight-error{margin:0}
 .wp-footer{margin-top:28px;padding-top:14px;border-top:1px solid var(--dsw-alias-border-l1,rgba(0,0,0,.08));display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--dsw-alias-label-secondary,#697386)}
 .wp-footer a{color:var(--wp-brand);text-decoration:none}
 @media(max-width:1000px){.wp-hero{grid-template-columns:1fr}.wp-hero-stats{grid-template-columns:repeat(4,1fr)}.wp-stat.wide{grid-column:auto}.wp-grid,.wp-analysis-grid{grid-template-columns:1fr}.wp-side,.wp-plan-side{position:static}.wp-plan-layout{grid-template-columns:1fr}.wp-planner{position:static}.wp-plan-grid{grid-template-columns:1fr}.wp-travel-grid,.wp-platform-grid{grid-template-columns:1fr}.wp-span-2{grid-column:auto}}
-@media(max-width:700px){.wp-shell{padding:12px 12px 34px}.wp-header{flex-wrap:wrap;gap:8px}.wp-brand{min-width:0}.wp-brand-mark{width:34px;height:34px}.wp-tabs{order:3;width:100%}.wp-header-actions{margin-left:auto}.wp-hero{padding:24px 20px;border-radius:18px}.wp-hero-stats{grid-template-columns:1fr 1fr}.wp-stat.wide{grid-column:1/-1}.wp-analysis-top{grid-template-columns:1fr}.wp-gauge-card{flex-direction:row;justify-content:flex-start;gap:16px}.wp-hotspots{grid-template-columns:1fr}.wp-result-head{flex-direction:column}.wp-result-actions{flex-direction:row;align-items:center}.wp-alternatives{grid-template-columns:1fr}.wp-bar-row{grid-template-columns:64px minmax(0,1fr) 22px}.wp-activity{grid-template-columns:38px minmax(0,1fr)}.wp-brand-en{display:none}.wp-apps{grid-template-columns:1fr 1fr}.wp-travel-head{flex-wrap:wrap}}
+@media(max-width:700px){.wp-shell{padding:12px 12px 34px}.wp-header{flex-wrap:wrap;gap:8px}.wp-brand{min-width:0}.wp-brand-mark{width:34px;height:34px}.wp-tabs{order:3;width:100%}.wp-header-actions{margin-left:auto}.wp-hero{padding:24px 20px;border-radius:18px}.wp-hero-stats{grid-template-columns:1fr 1fr}.wp-stat.wide{grid-column:1/-1}.wp-analysis-top{grid-template-columns:1fr}.wp-gauge-card{flex-direction:row;justify-content:flex-start;gap:16px}.wp-hotspots{grid-template-columns:1fr}.wp-result-head{flex-direction:column}.wp-result-actions{flex-direction:row;align-items:center}.wp-alternatives{grid-template-columns:1fr}.wp-bar-row{grid-template-columns:64px minmax(0,1fr) 22px}.wp-activity{grid-template-columns:38px minmax(0,1fr)}.wp-brand-en{display:none}.wp-apps{grid-template-columns:1fr 1fr}.wp-flight-search .wp-quick{margin-top:7px}.wp-flight-search .wp-quick button{max-width:100%}.wp-flight-form{grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr)}.wp-flight-date{grid-column:1/-1}.wp-flight-submit{grid-column:1/-1;justify-content:center}.wp-flight-swap{display:none}.wp-flight-result-head{flex-direction:column}.wp-travel-head{flex-wrap:wrap}}
 @media print{.wp-header,.wp-hero,.wp-planner,.wp-toolbar,.wp-footer,.wp-plan-side .wp-card:last-child{display:none!important}.wp-page{background:#fff}.wp-shell{max-width:none;padding:0}.wp-plan-layout{display:block}.wp-plan-result{margin-top:0}.wp-plan-grid{grid-template-columns:1fr}.wp-day{break-inside:avoid}.wp-result-actions{display:none}.wp-plan-side{position:static}.wp-card,.wp-day,.wp-result-head{border-color:#ddd;box-shadow:none}.wp-travel-card,.wp-platform-card{break-inside:avoid}}
 `;
     const CSS_ID = 'worldpulse-style';
@@ -1208,7 +1302,7 @@ window.__ModuleLoader__.load({
           (flights.options ?? []).map((option, index) => h('div', { className: 'wp-travel-option', key: index },
             h('div', { className: 'wp-travel-option-head' },
               h('b', null, option.title),
-              h('strong', null, money(option.priceLow, option.priceHigh))),
+              h('strong', null, cny(option.priceLow, option.priceHigh))),
             h('p', null, option.carriers),
             h('div', { className: 'wp-travel-meta' },
               h('span', null, h(Icon, { name: 'clock', size: 9 }), ` ${option.duration}`),
@@ -1234,7 +1328,7 @@ window.__ModuleLoader__.load({
           (stays.areas ?? []).map((area) => h('div', { className: 'wp-stay-area', key: area.name },
             h('div', { className: 'wp-stay-area-head' },
               h('b', null, area.name),
-              h('strong', null, `${money(area.priceLow, area.priceHigh)}${tx(lang, 'perNight')}`)),
+              h('strong', null, `${cny(area.priceLow, area.priceHigh)}${tx(lang, 'perNight')}`)),
             h('span', { className: 'wp-stay-vibe' }, area.vibe),
             h('p', null, h('b', null, `${tx(lang, 'stayBestFor')}: `), area.bestFor),
             h('p', null, h('b', null, `${tx(lang, 'stayCommute')}: `), area.commute),
@@ -1293,6 +1387,208 @@ window.__ModuleLoader__.load({
             h('b', null, `${tx(lang, key === 'flights' ? 'platformFlights' : key === 'stays' ? 'platformStays' : 'platformTransport')}: `),
             platforms.verdict?.[key] ?? ''))),
         h('p', { className: 'wp-travel-note' }, platforms.note));
+    }
+
+    function flightDateValue(offsetDays = 1) {
+      return new Date(Date.now() + offsetDays * 86_400_000).toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' });
+    }
+
+    const FLIGHT_CITY_FALLBACK = [
+      { name: '北京', en: 'Beijing', code: 'BJS', region: 'CN' },
+      { name: '上海', en: 'Shanghai', code: 'SHA', region: 'CN' },
+      { name: '广州', en: 'Guangzhou', code: 'CAN', region: 'CN' },
+      { name: '深圳', en: 'Shenzhen', code: 'SZX', region: 'CN' },
+      { name: '成都', en: 'Chengdu', code: 'CTU', region: 'CN' },
+      { name: '杭州', en: 'Hangzhou', code: 'HGH', region: 'CN' },
+      { name: '武汉', en: 'Wuhan', code: 'WUH', region: 'CN' },
+      { name: '西安', en: "Xi'an", code: 'XIY', region: 'CN' },
+      { name: '厦门', en: 'Xiamen', code: 'XMN', region: 'CN' },
+      { name: '昆明', en: 'Kunming', code: 'KMG', region: 'CN' },
+      { name: '香港', en: 'Hong Kong', code: 'HKG', region: 'HK' },
+      { name: '澳门', en: 'Macau', code: 'MFM', region: 'MO' },
+      { name: '台北', en: 'Taipei', code: 'TPE', region: 'TW' },
+      { name: '高雄', en: 'Kaohsiung', code: 'KHH', region: 'TW' },
+      { name: '台中', en: 'Taichung', code: 'RMQ', region: 'TW' },
+    ];
+
+    function flightCityLabel(city, lang) {
+      if (!city) return '';
+      return lang === 'en' && city.en ? `${city.en} (${city.code})` : `${city.name} ${city.code}`;
+    }
+
+    function FlightsView({ lang }) {
+      const [cities, setCities] = useState(FLIGHT_CITY_FALLBACK);
+      const [from, setFrom] = useState('上海');
+      const [to, setTo] = useState('台北');
+      const [date, setDate] = useState(flightDateValue(1));
+      const [result, setResult] = useState(null);
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState(null);
+      const [notice, setNotice] = useState(null);
+      const abort = useRef(null);
+      const today = flightDateValue(0);
+      const maxDate = flightDateValue(365);
+
+      useEffect(() => {
+        let alive = true;
+        api('airports').then((payload) => {
+          if (!alive) return;
+          const list = Array.isArray(payload?.cities) && payload.cities.length ? payload.cities : FLIGHT_CITY_FALLBACK;
+          setCities(list);
+          setFrom((previous) => (list.some((city) => city.name === previous) ? previous : list[0]?.name ?? '上海'));
+          setTo((previous) => {
+            if (list.some((city) => city.name === previous) && previous !== from) return previous;
+            return list.find((city) => city.name !== from)?.name ?? '台北';
+          });
+          setNotice(null);
+        }).catch(() => {
+          if (!alive) return;
+          setCities(FLIGHT_CITY_FALLBACK);
+          setNotice(tx(lang, 'flightQueryNoLive'));
+        });
+        return () => {
+          alive = false;
+          if (abort.current) abort.current.abort();
+        };
+      }, [lang]);
+
+      const run = useCallback(async (override) => {
+        const nextFrom = override?.from ?? from;
+        const nextTo = override?.to ?? to;
+        const nextDate = override?.date ?? date;
+        if (!nextFrom || !nextTo) {
+          setError(tx(lang, 'flightQueryEmpty'));
+          return;
+        }
+        if (nextFrom === nextTo) {
+          setError(tx(lang, 'flightSameCity'));
+          return;
+        }
+        if (abort.current) abort.current.abort();
+        const controller = new AbortController();
+        abort.current = controller;
+        setLoading(true);
+        setError(null);
+        setResult(null);
+        try {
+          const data = await api('flights', { from: nextFrom, to: nextTo, date: nextDate }, controller.signal);
+          setResult(data);
+        } catch (caught) {
+          if (caught.name === 'AbortError') return;
+          setError(caught.message || tx(lang, 'flightNotFound'));
+        } finally {
+          if (!controller.signal.aborted) setLoading(false);
+        }
+      }, [from, to, date, lang]);
+
+      const swap = () => {
+        setFrom(to);
+        setTo(from);
+        setResult(null);
+        setError(null);
+      };
+
+      const popular = [
+        ['上海', '台北'],
+        ['北京', '香港'],
+        ['广州', '澳门'],
+        ['成都', '高雄'],
+        ['厦门', '台北'],
+      ];
+
+      const regionGroups = [
+        ['CN', 'flightQueryCn'],
+        ['HK', 'flightQueryHk'],
+        ['MO', 'flightQueryMo'],
+        ['TW', 'flightQueryTw'],
+      ];
+
+      const citySelect = (value, onChange, id) => h('select', {
+        id, className: 'wp-input', value, onChange: (event) => onChange(event.target.value),
+      }, regionGroups.map(([region, labelKey]) => {
+        const group = cities.filter((city) => city.region === region);
+        if (!group.length) return null;
+        return h('optgroup', { key: region, label: tx(lang, labelKey) },
+          group.map((city) => h('option', { key: city.code || city.name, value: city.name }, flightCityLabel(city, lang))));
+      }));
+
+      const data = result;
+
+      return h('div', { className: 'wp-flight-view' },
+        h('div', { className: 'wp-section-head' },
+          h('div', null,
+            h('h2', null, tx(lang, 'flightQueryTitle')),
+            h('p', null, `${tx(lang, 'flightQuerySub')} · ${cities.length} ${lang === 'zh' ? '个城市' : 'cities'}`))),
+        h('form', {
+          className: 'wp-card wp-flight-search',
+          onSubmit: (event) => { event.preventDefault(); run(); },
+        },
+        h('div', { className: 'wp-flight-form' },
+          h('div', { className: 'wp-field' },
+            h('label', { htmlFor: 'wp-flight-from' }, tx(lang, 'flightFrom')),
+            citySelect(from, (value) => { setFrom(value); setResult(null); }, 'wp-flight-from')),
+          h('button', {
+            type: 'button', className: 'wp-icon-btn wp-flight-swap', onClick: swap,
+            title: tx(lang, 'flightSwap'), 'aria-label': tx(lang, 'flightSwap'),
+          }, h(Icon, { name: 'swap', size: 14 })),
+          h('div', { className: 'wp-field' },
+            h('label', { htmlFor: 'wp-flight-to' }, tx(lang, 'flightTo')),
+            citySelect(to, (value) => { setTo(value); setResult(null); }, 'wp-flight-to')),
+          h('div', { className: 'wp-field wp-flight-date' },
+            h('label', { htmlFor: 'wp-flight-date' }, tx(lang, 'flightDate')),
+            h('input', {
+              id: 'wp-flight-date', className: 'wp-input', type: 'date', value: date, min: today, max: maxDate,
+              onChange: (event) => setDate(event.target.value),
+            })),
+          h('button', {
+            type: 'submit', className: 'wp-btn wp-btn-brand wp-flight-submit', disabled: loading,
+          }, loading ? h(Icon, { name: 'refresh', size: 13 }) : h(Icon, { name: 'search', size: 13 }),
+          loading ? tx(lang, 'flightSearching') : tx(lang, 'flightSearchBtn'))),
+        h('div', { className: 'wp-quick' },
+          h('span', { className: 'wp-muted', style: { fontSize: 10, marginRight: 2 } }, `${tx(lang, 'flightQueryPopular')}:`),
+          popular.map(([a, b]) => h('button', {
+            key: `${a}-${b}`, type: 'button',
+            onClick: () => { setFrom(a); setTo(b); run({ from: a, to: b }); },
+          }, `${a} → ${b}`))),
+        h('p', { className: 'wp-plan-note' }, tx(lang, 'flightQueryText'))),
+        notice ? h('div', { className: 'wp-banner', 'data-tone': 'info' }, h(Icon, { name: 'alert', size: 14 }), h('div', null, notice)) : null,
+        error ? h('div', { className: 'wp-banner wp-flight-error', 'data-tone': 'error' },
+          h(Icon, { name: 'alert', size: 14 }), h('div', null, error)) : null,
+        loading ? h('div', { className: 'wp-card', style: { padding: 20 } },
+          h('div', { className: 'wp-row', style: { justifyContent: 'flex-start', gap: 9 } },
+            h(Icon, { name: 'refresh', size: 18 }), h('b', null, tx(lang, 'flightSearching')))) : null,
+        data ? h('div', { className: 'wp-flight-result' },
+          h('div', { className: 'wp-card wp-travel-card' },
+            h('div', { className: 'wp-flight-result-head' },
+              h('div', null,
+                h('div', { className: 'wp-eyebrow' }, `${data.from.regionLabel} → ${data.to.regionLabel}`),
+                h('h2', null, `${flightCityLabel(data.from, lang)} → ${flightCityLabel(data.to, lang)}`),
+                h('p', null, `${formatDate(data.date, lang)} · ${data.distanceKm} ${tx(lang, 'km')} · ${data.airlines}`)),
+              h('div', { className: 'wp-flight-badges' },
+                h('span', { className: 'wp-flight-badge', 'data-tone': data.direct ? 'good' : 'warn' },
+                  h(Icon, { name: 'plane', size: 11 }), data.direct ? tx(lang, 'flightDirectYes') : tx(lang, 'flightDirectNo')),
+                h('span', { className: 'wp-flight-badge' }, h(Icon, { name: 'clock', size: 11 }), data.duration))),
+            h('div', { className: 'wp-travel-options' },
+              (data.options ?? []).map((option) => h('div', { className: 'wp-travel-option', key: option.kind + option.title },
+                h('div', { className: 'wp-travel-option-head' },
+                  h('b', null, option.kind === 'direct' ? tx(lang, 'flightNonstop') : option.kind === 'transfer' ? tx(lang, 'flightVia') : tx(lang, 'flightBudgetOption')),
+                  h('strong', null, cny(option.priceLow, option.priceHigh))),
+                h('p', null, `${option.carriers} · ${option.duration}`),
+                h('div', { className: 'wp-travel-proscons' },
+                  h('span', null, h('b', null, `${tx(lang, 'flightPros')}: `), option.pros),
+                  h('span', null, h('b', null, `${tx(lang, 'flightCons')}: `), option.cons))))),
+            h('div', { className: 'wp-travel-label' }, tx(lang, 'flightSearch')),
+            h(TravelLinks, { links: data.links, limit: 7, lang }),
+            h('p', { className: 'wp-travel-note' }, tx(lang, 'flightQueryNote'))),
+          h('div', { className: 'wp-card' },
+            h('h3', null, tx(lang, 'flightQueryLive')),
+            data.live?.length ? h('div', { className: 'wp-flight-live' },
+              data.live.map((item) => h('a', {
+                key: item.url, href: item.url, target: '_blank', rel: 'noopener noreferrer',
+              },
+              h('b', null, item.title),
+              h('span', null, h('em', null, item.source), item.snippet ? ` · ${item.snippet}` : '')))) : h('p', { className: 'wp-flight-note' }, tx(lang, 'flightQueryNoLive')))) : null,
+        !data ? h('p', { className: 'wp-flight-note' }, tx(lang, 'flightQueryNote')) : null);
     }
 
     function PlanView({ lang, plan, form, setForm, runPlan, printPlan }) {
@@ -1438,8 +1734,8 @@ window.__ModuleLoader__.load({
               h('aside', { className: 'wp-plan-side' },
                 h('div', { className: 'wp-card' },
                   h('h3', null, tx(lang, 'budgetTitle')),
-                  h('div', { className: 'wp-budget-total' }, money(data.budget?.total?.low, data.budget?.total?.high)),
-                  h('div', { className: 'wp-budget-row' }, h('span', null, tx(lang, 'perDay')), h('b', null, money(data.budget?.perDay?.low, data.budget?.perDay?.high))),
+                  h('div', { className: 'wp-budget-total' }, cny(data.budget?.total?.low, data.budget?.total?.high)),
+                  h('div', { className: 'wp-budget-row' }, h('span', null, tx(lang, 'perDay')), h('b', null, cny(data.budget?.perDay?.low, data.budget?.perDay?.high))),
                   h('div', { className: 'wp-budget-row' }, h('span', null, tx(lang, 'days')), h('b', null, `${data.itinerary?.length ?? 0} ${tx(lang, 'daysUnit')}`)),
                   h('div', { className: 'wp-budget-row' }, h('span', null, tx(lang, 'budget')), h('b', null, data.budget?.label)),
                   h('p', { className: 'wp-plan-note' }, tx(lang, 'budgetNote'))),
@@ -1469,7 +1765,7 @@ window.__ModuleLoader__.load({
       const [lang, setLang] = useState(() => (readStored('worldpulse.lang', 'zh') === 'en' ? 'en' : 'zh'));
       const [tab, setTab] = useState(() => {
         const value = readStored('worldpulse.tab', 'news');
-        return ['news', 'brief', 'plan'].includes(value) ? value : 'news';
+        return ['news', 'brief', 'plan', 'flights'].includes(value) ? value : 'news';
       });
       const [region, setRegion] = useState('全球');
       const [tick, setTick] = useState(0);
@@ -1488,7 +1784,7 @@ window.__ModuleLoader__.load({
       useEffect(() => { store('worldpulse.tab', tab); }, [tab]);
       useEffect(() => {
         const handler = (event) => {
-          if (event.detail === 'plan' || event.detail === 'news' || event.detail === 'brief') setTab(event.detail);
+          if (event.detail === 'plan' || event.detail === 'news' || event.detail === 'brief' || event.detail === 'flights') setTab(event.detail);
         };
         window.addEventListener('worldpulse:tab', handler);
         return () => window.removeEventListener('worldpulse:tab', handler);
@@ -1589,6 +1885,7 @@ window.__ModuleLoader__.load({
         ['news', tx(lang, 'navNews'), 'radio'],
         ['brief', tx(lang, 'navBrief'), 'globe'],
         ['plan', tx(lang, 'navPlan'), 'route'],
+        ['flights', tx(lang, 'navFlights'), 'plane'],
       ];
       return h('div', { className: 'wp-page', ref: pageRef },
         h(Style),
@@ -1656,6 +1953,7 @@ window.__ModuleLoader__.load({
                 h('p', null, tx(lang, 'planSub'))),
               h('span', { className: 'wp-muted', style: { fontSize: 10.5 } }, `1–14 ${tx(lang, 'daysUnit')} · ${tx(lang, 'riskRed')}`)),
             h(PlanView, { lang, plan, form, setForm, runPlan, printPlan: () => window.print() })) : null,
+          tab === 'flights' ? h(FlightsView, { lang }) : null,
           h('footer', { className: 'wp-footer' },
             h('span', null, `${tx(lang, 'brand')} · ${tx(lang, 'tagline')}`),
             h('span', null,
