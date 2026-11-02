@@ -1,0 +1,39 @@
+{
+  "name": "@local/worldpulse",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WorldPulse — live world news, situation analysis, and worldwide trip planning for DSH.",
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "assets/*.png",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lucakaneshiro1/worldpulse.git"
+  },
+  "homepage": "https://github.com/lucakaneshiro1/worldpulse#readme",
+  "bugs": {
+    "url": "https://github.com/lucakaneshiro1/worldpulse/issues"
+  }
+}

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="WorldPulse">
+  <defs>
+    <linearGradient id="wp-ocean" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2B7FFF"/>
+      <stop offset=".52" stop-color="#10B7A6"/>
+      <stop offset="1" stop-color="#0B6BCB"/>
+    </linearGradient>
+    <linearGradient id="wp-route" x1="17" y1="42" x2="50" y2="20" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE8A3"/>
+      <stop offset="1" stop-color="#FFFFFF"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#wp-ocean)"/>
+  <circle cx="32" cy="32" r="20.5" fill="none" stroke="#fff" stroke-opacity=".72" stroke-width="2"/>
+  <ellipse cx="32" cy="32" rx="9.5" ry="20.5" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.6"/>
+  <path d="M12.8 25.5h38.4M11.6 38.5h40.8" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M17.5 43.2c5.2-4.7 7.7-10.3 10.1-14.4 2.3-4 5.1-6.2 8.9-6.2 3.6 0 6.3 1.9 9.2 5.2" fill="none" stroke="url(#wp-route)" stroke-width="2.8" stroke-linecap="round" stroke-dasharray="1 5.4"/>
+  <circle cx="17.2" cy="43.4" r="3.2" fill="#FFE8A3"/>
+  <circle cx="47.6" cy="26.1" r="3.6" fill="#fff"/>
+  <circle cx="47.6" cy="26.1" r="1.5" fill="#0B6BCB"/>
+</svg>

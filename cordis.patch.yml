@@ -1,0 +1,3 @@
+- insert:
+    - id: worldpulse
+      name: '@local/worldpulse'
