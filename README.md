@@ -23,22 +23,27 @@
 
 ## 安装
 
-### 从 npm 安装（公开发布）
+### GitHub Release 离线包
+
+下载 [dsh-worldpulse.tgz](https://github.com/lucakaneshiro1/worldpulse/releases/latest/download/dsh-worldpulse.tgz)，解压后把其中的 `package/` 目录作为 DSH 插件 bundle 安装：
 
 ```powershell
-npm install dsh-worldpulse
+tar -xzf dsh-worldpulse.tgz
 ```
 
-包名：`dsh-worldpulse`。安装后在 DSH 的插件安装入口选择该 bundle，或在插件目录中加载它。
+也可以在 DSH 插件管理器中直接选择解压后的目录。安装后左侧栏出现「寰球视野」图标，点击进入即可。
 
 ### 从本地目录安装
 
+在 DSH 插件管理器中指向本目录（把路径替换成你的实际路径）：
+
 ```powershell
-# 在 DSH 插件管理器中指向本目录
-C:\Users\杨苗煜\Documents\deepseek-harness\default-workspace\worldpulse
+<你的工作目录>\worldpulse
 ```
 
-安装后左侧栏出现「寰球视野」图标，点击进入即可。
+### npm 包
+
+包名 `dsh-worldpulse`，版本 `1.1.0` 已构建；npm 公开发布待完成，恢复后可在此补充一行安装命令。
 
 ## 开发
 
